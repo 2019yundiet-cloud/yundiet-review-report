@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>윤식단 리뷰 시스템 — 작동 데모 (인터랙티브 시안)</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+:root{
+  --g900:#283417;--g800:#33451f;--g700:#445a26;--g600:#5a7531;--g500:#6f8a3f;--g400:#8aa258;--g300:#b9cd8e;--g100:#e9efd8;--g50:#f3f6e9;
+  --cream:#f6f3ea;--paper:#fff;--ink:#232a1b;--ink2:#5c6450;--ink3:#8c917f;
+  --amber:#ffb01f;--amberD:#b9760a;--rose:#cf5a47;--roseBg:#fbece8;--roseInk:#8f3325;
+  --line:#e7e3d6;--line2:#d7d2c2;--shadow:0 1px 2px rgba(40,52,23,.05),0 8px 24px rgba(40,52,23,.07);--shadow2:0 3px 8px rgba(40,52,23,.09),0 20px 44px rgba(40,52,23,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',-apple-system,system-ui,sans-serif;color:var(--ink);background:var(--cream);line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:860px;margin:0 auto;padding:0 18px}
+a{color:inherit}
+.topnote{background:var(--g900);color:#eef3e2;text-align:center;font-size:13px;padding:10px 18px}
+.topnote a{color:#cfe08a;font-weight:700}
+.hero{background:linear-gradient(160deg,#2b3a1c,#46602a);color:#fff;padding:40px 0 34px;text-align:center}
+.hero h1{font-size:26px;font-weight:800;letter-spacing:-.02em}
+.hero p{margin-top:10px;font-size:14.5px;color:rgba(255,255,255,.85)}
+.hero .tag{display:inline-block;margin-top:14px;font-size:12px;font-weight:700;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:5px 13px}
+.sec{padding:34px 0}
+.lbl{font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--g600);text-transform:uppercase;margin-bottom:6px}
+.h{font-size:19px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.sub{font-size:13.5px;color:var(--ink2);margin-bottom:16px}
+.try{font-size:12px;font-weight:700;color:var(--amberD);background:#fff5dc;border:1px solid #f0dca0;border-radius:8px;padding:7px 12px;display:inline-flex;gap:6px;align-items:center;margin-bottom:16px}
+
+/* stars */
+.stars{display:inline-flex;letter-spacing:1px;line-height:1}
+.stars i{font-style:normal;color:var(--amber)}
+.stars i.off{color:#ddd6c4}
+.stars.lg{font-size:22px}.stars.sm{font-size:12px}
+
+/* topbar */
+.topbar{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
+.topbar .nm{font-size:17px;font-weight:800}
+.topbar .pr{font-size:21px;font-weight:800;color:var(--g800);margin-top:6px}
+.topbar .pr small{font-size:14px}
+.tbrow{display:flex;align-items:center;gap:12px;margin-top:13px;background:var(--g50);border:1px solid var(--g100);border-radius:10px;padding:11px 14px;flex-wrap:wrap}
+.tbrow .sc{font-size:20px;font-weight:800;color:var(--g800)}
+.tbrow .meta{font-size:13px;color:var(--ink2);font-weight:600}
+.tbrow .meta b{color:var(--g700)}
+.tbrow .go{margin-left:auto;font-size:12.5px;font-weight:800;color:#fff;background:var(--g700);border:none;border-radius:8px;padding:8px 14px;cursor:pointer}
+.tbrow .go:hover{background:var(--g800)}
+
+/* product cards */
+.pcards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pc{background:#fff;border:1px solid var(--line);border-radius:13px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:.15s}
+.pc:hover{transform:translateY(-2px);box-shadow:var(--shadow2)}
+.pc .th{height:120px;display:flex;align-items:center;justify-content:center;font-size:40px}
+.pc .bd{padding:12px 13px}
+.pc .nm{font-size:13.5px;font-weight:700}
+.pc .rr{display:flex;align-items:center;gap:5px;margin-top:7px}
+.pc .rr .sc{font-size:12px;font-weight:800}.pc .rr .ct{font-size:11.5px;color:var(--ink3)}
+.pc .pr{margin-top:8px;font-size:15px;font-weight:800;color:var(--g800)}
+.pc .pr .dc{color:var(--rose);margin-right:5px}
+
+/* review widget */
+.rw{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow2);overflow:hidden}
+.summary{display:grid;grid-template-columns:180px 1fr;gap:22px;padding:24px;border-bottom:1px solid var(--line)}
+.avgbox{text-align:center;border-right:1px solid var(--line)}
+.avgbox .big{font-size:46px;font-weight:800;color:var(--g800);line-height:1}
+.avgbox .cnt{font-size:12.5px;color:var(--ink2);margin-top:8px;font-weight:600}
+.avgbox .cnt b{color:var(--g700)}
+.dist{display:flex;flex-direction:column;gap:7px;justify-content:center}
+.dist .row{display:flex;align-items:center;gap:9px;font-size:12px;cursor:pointer;border-radius:6px;padding:2px 4px}
+.dist .row:hover{background:var(--g50)}
+.dist .row.on{background:var(--g100)}
+.dist .lab{width:30px;font-weight:700}
+.dist .bar{flex:1;height:8px;background:#eee9da;border-radius:99px;overflow:hidden}
+.dist .bar span{display:block;height:100%;background:var(--amber);border-radius:99px;transition:width .5s}
+.dist .pc{width:42px;text-align:right;font-weight:700}
+.keywords{padding:16px 24px;border-bottom:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.keywords .kt{font-size:12px;font-weight:800;color:var(--ink3)}
+.kw{font-size:12.5px;font-weight:700;background:var(--g50);color:var(--g700);border:1px solid var(--g100);padding:6px 12px;border-radius:99px;cursor:pointer}
+.kw.on,.kw:hover{background:var(--g700);color:#fff;border-color:var(--g700)}
+.kw b{color:inherit}
+.pstrip{padding:16px 24px;border-bottom:1px solid var(--line)}
+.pstrip .ph{font-size:13px;font-weight:800;margin-bottom:10px}
+.pscroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.pthumb{width:78px;height:78px;border-radius:9px;flex:0 0 auto;display:flex;align-items:flex-end;padding:6px;font-size:22px;cursor:pointer;position:relative;transition:.15s}
+.pthumb:hover{transform:scale(1.04)}
+.bar2{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 24px;border-bottom:1px solid var(--line);background:#fcfbf6;flex-wrap:wrap}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.fchip{font-size:12px;font-weight:700;border:1px solid var(--line2);background:#fff;color:var(--ink2);padding:7px 12px;border-radius:99px;cursor:pointer;transition:.12s}
+.fchip:hover{border-color:var(--g500)}
+.fchip.on{background:var(--g700);color:#fff;border-color:var(--g700)}
+.sortsel{font-size:12.5px;font-weight:700;color:var(--ink2);border:1px solid var(--line2);background:#fff;padding:7px 12px;border-radius:99px;cursor:pointer}
+#yd-count{font-size:12.5px;color:var(--ink3);padding:10px 24px 0;font-weight:600}
+.rcard{padding:20px 24px;border-bottom:1px solid var(--line);animation:fade .25s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.rc-top{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.rc-av{width:38px;height:38px;border-radius:50%;background:var(--g100);color:var(--g700);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex:0 0 auto}
+.rc-name{font-weight:800;font-size:13.5px}
+.rc-sub{font-size:11px;color:var(--ink3);margin-top:1px}
+.rc-badge{font-size:10.5px;font-weight:800;background:#fff3d6;color:var(--amberD);padding:2px 7px;border-radius:6px;margin-left:5px}
+.rc-badge.re{background:var(--g100);color:var(--g700)}
+.rc-opt{font-size:11px;color:var(--ink2);background:#f4f2ea;border-radius:7px;padding:5px 10px;display:inline-block;margin:2px 0 9px;font-weight:600}
+.rc-purpose{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0 9px}
+.ptag{font-size:11px;font-weight:700;color:var(--g600);background:var(--g50);border:1px solid var(--g100);padding:3px 9px;border-radius:99px}
+.rc-body{font-size:13.5px;color:#36402a;line-height:1.7}
+.rc-photos{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
+.rc-photo{width:88px;height:88px;border-radius:9px;display:flex;align-items:flex-end;padding:6px;font-size:24px;cursor:pointer;transition:.15s}
+.rc-photo:hover{transform:scale(1.04)}
+.rc-foot{display:flex;align-items:center;gap:14px;margin-top:12px}
+.helpful{font-size:12px;font-weight:700;color:var(--ink2);border:1px solid var(--line2);background:#fff;padding:6px 12px;border-radius:99px;cursor:pointer;transition:.12s}
+.helpful:hover{border-color:var(--g500);color:var(--g700)}
+.helpful.on{background:var(--g50);border-color:var(--g500);color:var(--g700)}
+.rc-reply{margin-top:12px;background:var(--g50);border-radius:9px;padding:12px 14px;font-size:12px;color:var(--g800);line-height:1.55}
+.rc-reply .who{font-weight:800;color:var(--g700);margin-bottom:3px}
+
+/* write form */
+.wf{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow2)}
+.wf h4{font-size:16px;font-weight:800}
+.wf .d{font-size:12.5px;color:var(--ink2);margin:3px 0 16px}
+.fld{margin-bottom:15px}
+.fld>label{font-size:12.5px;font-weight:800;display:block;margin-bottom:7px}
+.starin{display:inline-flex;gap:3px;font-size:28px;cursor:pointer}
+.starin i{font-style:normal;color:#ddd6c4;transition:.08s}
+.starin i.on{color:var(--amber)}
+.opts{display:flex;gap:7px;flex-wrap:wrap}
+.opt{font-size:12px;font-weight:700;border:1px solid var(--line2);border-radius:99px;padding:7px 13px;color:var(--ink2);background:#fff;cursor:pointer;transition:.12s}
+.opt:hover{border-color:var(--g500)}
+.opt.on{background:var(--g700);color:#fff;border-color:var(--g700)}
+.ta{width:100%;border:1px solid var(--line2);border-radius:9px;padding:11px;font-size:13px;font-family:inherit;min-height:64px;resize:vertical;color:var(--ink)}
+.ta:focus{outline:none;border-color:var(--g500)}
+.uprow{display:flex;gap:9px}
+.upbox{flex:1;border:1.5px dashed var(--line2);border-radius:9px;padding:14px;text-align:center;font-size:12px;color:var(--ink3);font-weight:700;cursor:pointer;transition:.12s}
+.upbox:hover{border-color:var(--g500);color:var(--g600)}
+.upbox.on{border-color:var(--g500);border-style:solid;background:var(--g50);color:var(--g700)}
+.reward{display:flex;align-items:center;gap:9px;background:#fff8e8;border:1px solid #f6e3ac;border-radius:9px;padding:11px 14px;font-size:12.5px;color:#7a5208;font-weight:600;margin-top:4px}
+.reward b{color:var(--amberD);font-weight:800;font-size:15px}
+.submit{margin-top:16px;width:100%;background:var(--g700);color:#fff;border:none;text-align:center;padding:13px;border-radius:9px;font-weight:800;font-size:14px;cursor:pointer}
+.submit:hover{background:var(--g800)}
+
+/* lightbox */
+.lb{position:fixed;inset:0;background:rgba(28,32,18,.82);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.lb.on{display:flex}
+.lb .box{max-width:420px;width:100%;text-align:center}
+.lb .img{height:300px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:80px;box-shadow:var(--shadow2)}
+.lb .cap{color:#fff;font-size:13px;margin-top:14px;font-weight:600}
+.lb .x{position:absolute;top:18px;right:22px;color:#fff;font-size:30px;cursor:pointer;font-weight:300}
+
+/* food gradients */
+.f1{background:linear-gradient(135deg,#dfe9c4,#b6cf86)}.f2{background:linear-gradient(135deg,#f3dca8,#e8b765)}
+.f3{background:linear-gradient(135deg,#e8c9a0,#d49b67)}.f4{background:linear-gradient(135deg,#cfe0d2,#9cc2a8)}
+.f5{background:linear-gradient(135deg,#f5d3c2,#e0a285)}.f6{background:linear-gradient(135deg,#e4dcc0,#c2b884)}
+
+.foot{background:var(--g900);color:rgba(255,255,255,.7);text-align:center;font-size:12.5px;padding:26px 18px;line-height:1.7}
+.foot a{color:#cfe08a;font-weight:700}
+@media(max-width:620px){.summary{grid-template-columns:1fr}.avgbox{border-right:none;border-bottom:1px solid var(--line);padding-bottom:14px}.pcards{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div class="topnote">🔧 작동하는 인터랙티브 시안입니다 — 필터·정렬·별점·사진을 직접 눌러보세요. · <a href="index.html">← 분석 리포트</a> · <a href="implementation.html">실행 가이드(코드) →</a></div>
+
+<div class="hero">
+  <div class="wrap">
+    <h1>윤식단 리뷰 시스템 — 작동 데모</h1>
+    <p>이미지가 아니라 실제로 움직이는 화면입니다. 클릭·필터·정렬이 진짜 작동합니다.</p>
+    <span class="tag">데이터는 예시 · 구조·동작은 그대로 적용 가능</span>
+  </div>
+</div>
+
+<!-- TOP SUMMARY BAR -->
+<section class="sec">
+  <div class="wrap">
+    <div class="lbl">① 상품 상단 별점 요약 바</div>
+    <div class="h">가격·구매 버튼 옆에서 바로 신뢰를 준다</div>
+    <div class="sub">'후기 보기'를 누르면 아래 리뷰로 부드럽게 스크롤됩니다.</div>
+    <div class="topbar">
+      <div class="nm">순수단백 닭가슴살 도시락</div>
+      <div class="pr">12,900<small>원</small></div>
+      <div class="tbrow">
+        <span class="stars lg"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span>
+        <span class="sc">4.9</span>
+        <span class="meta">리뷰 <b>2,431</b>개 · 재구매율 <b>68%</b></span>
+        <button class="go" onclick="document.getElementById('rw').scrollIntoView({behavior:'smooth'})">후기 보기 ↓</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT CARDS -->
+<section class="sec">
+  <div class="wrap">
+    <div class="lbl">② 상품 목록 카드 별점 배지</div>
+    <div class="h">탐색 단계부터 별점이 보인다</div>
+    <div class="sub">목록에서부터 사회적 증거를 제공 → 클릭률 상승.</div>
+    <div class="pcards">
+      <div class="pc"><div class="th f1">🥗</div><div class="bd"><div class="nm">알룰로스 420g</div><div class="rr"><span class="stars sm"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span><span class="sc">4.8</span><span class="ct">(1,204)</span></div><div class="pr"><span class="dc">21%</span>7,000원</div></div></div>
+      <div class="pc"><div class="th f3">🍱</div><div class="bd"><div class="nm">순수단백 닭가슴살</div><div class="rr"><span class="stars sm"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span><span class="sc">4.9</span><span class="ct">(2,431)</span></div><div class="pr"><span class="dc">15%</span>12,900원</div></div></div>
+      <div class="pc"><div class="th f4">🥦</div><div class="bd"><div class="nm">밸런시 도시락</div><div class="rr"><span class="stars sm"><i>★</i><i>★</i><i>★</i><i>★</i><i class="off">★</i></span><span class="sc">4.6</span><span class="ct">(883)</span></div><div class="pr"><span class="dc">10%</span>9,900원</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN REVIEW WIDGET -->
+<section class="sec">
+  <div class="wrap">
+    <div class="lbl">③ 상품 상세 리뷰 위젯 (메인)</div>
+    <div class="h">평균·분포·키워드·포토·필터·정렬이 모두 작동</div>
+    <div class="try">👆 별점 분포 막대, 키워드 칩, 필터, 정렬, 사진을 직접 눌러보세요</div>
+    <div class="rw" id="rw">
+      <div class="summary">
+        <div class="avgbox">
+          <div class="big">4.9</div>
+          <div class="stars lg" style="margin-top:6px"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></div>
+          <div class="cnt">총 <b>2,431</b>개 리뷰<br>재구매율 <b>68%</b></div>
+        </div>
+        <div class="dist" id="yd-dist"></div>
+      </div>
+      <div class="keywords" id="yd-kw">
+        <span class="kt">자주 나온 말</span>
+      </div>
+      <div class="pstrip">
+        <div class="ph">📷 포토·동영상 후기 <span style="color:var(--ink3);font-weight:600">812</span></div>
+        <div class="pscroll" id="yd-strip"></div>
+      </div>
+      <div class="bar2">
+        <div class="filters" id="yd-filters"></div>
+        <select class="sortsel" id="yd-sort">
+          <option value="best">베스트순</option>
+          <option value="recent">최신순</option>
+          <option value="rating">별점 높은순</option>
+        </select>
+      </div>
+      <div id="yd-count"></div>
+      <div id="yd-list"></div>
+    </div>
+  </div>
+</section>
+
+<!-- WRITE FORM -->
+<section class="sec">
+  <div class="wrap">
+    <div class="lbl">④ 리뷰 작성 폼 (다이어트 특화 + 차등 보상)</div>
+    <div class="h">목적·기간 선택, 사진/영상 차등 적립이 실시간 계산</div>
+    <div class="try">👆 별점·목적·사진/영상 버튼을 눌러 적립금이 바뀌는 걸 확인하세요</div>
+    <div class="wf">
+      <h4>후기를 남겨주세요</h4>
+      <div class="d">다른 분들의 식단 선택에 큰 도움이 됩니다 🌱</div>
+      <div class="fld"><label>별점</label><span class="starin" id="starin"><i data-v="1">★</i><i data-v="2">★</i><i data-v="3">★</i><i data-v="4">★</i><i data-v="5">★</i></span></div>
+      <div class="fld"><label>어떤 목적으로 드셨나요?</label><div class="opts" data-group="purpose"><span class="opt">체중감량</span><span class="opt">혈당관리</span><span class="opt">근성장</span><span class="opt">간편식</span></div></div>
+      <div class="fld"><label>드신 기간</label><div class="opts" data-group="period"><span class="opt">처음</span><span class="opt">3주차</span><span class="opt">3개월+</span></div></div>
+      <div class="fld"><label>후기 내용</label><textarea class="ta" placeholder="예) 포만감이 오래가서 군것질이 줄었어요…"></textarea></div>
+      <div class="fld"><label>사진·동영상 (선택)</label><div class="uprow"><div class="upbox" id="up-photo">📷 사진 추가<br><span style="font-size:11px">+200P</span></div><div class="upbox" id="up-video">🎬 동영상 추가<br><span style="font-size:11px">+500P</span></div></div></div>
+      <div class="reward">🎁 예상 적립 <b id="reward">200P</b> <span id="reward-detail" style="font-weight:600">(기본 200)</span></div>
+      <button class="submit" onclick="alert('데모입니다 — 실제 적용 시 아임웹/CREMA 작성 폼과 연결됩니다 :)')">후기 등록하기</button>
+    </div>
+  </div>
+</section>
+
+<div class="foot">
+  윤식단 리뷰 시스템 작동 데모 · 데이터는 예시입니다<br>
+  <a href="index.html">분석 리포트</a> · <a href="implementation.html">실행 가이드 & 실제 코드</a>
+</div>
+
+<!-- lightbox -->
+<div class="lb" id="lb" onclick="closeLb()"><span class="x">×</span><div class="box"><div class="img" id="lb-img"></div><div class="cap" id="lb-cap"></div></div></div>
+
+<script>
+(function(){
+  // ---------- demo data ----------
+  var REVIEWS = [
+    {name:'김민지',av:'김',date:'2026-06-12',rating:5,re:'재구매 4회',purpose:['체중감량','섭취 3주차','-2.4kg'],opt:'순수단백 닭가슴살 6팩',
+     body:'점심 대용으로 3주째 먹는데 포만감이 진짜 오래가요. 닭가슴살 특유의 퍽퍽함이 적어서 질리지 않고, 데우면 더 맛있어요. 덕분에 군것질이 확 줄어 자연스럽게 식단 관리가 됩니다. 다음엔 12팩으로!',
+     photos:['f3🍱','f5🍗','f1🥗'],helpful:24,tags:['photo','weight'],
+     reply:'3주째 함께해 주셔서 감사해요! 12팩 정기배송이 더 알뜰해요 :)'},
+    {name:'이수현',av:'이',date:'2026-06-09',rating:5,re:'포토',purpose:['혈당관리','아침대용'],opt:'정기배송 샐러드',
+     body:'공복 혈당 때문에 아침을 가볍게 먹어야 하는데 이걸로 바꾸고 식후 혈당 스파이크가 확실히 덜해요. 양도 적당하고 소스가 맛있어 매일 먹어도 안 물려요.',
+     photos:['f4🥦','f1🥗'],helpful:11,tags:['photo','blood'],reply:''},
+    {name:'박준호',av:'박',date:'2026-06-05',rating:4,re:'재구매 2회',purpose:['근성장','운동식단'],opt:'밸런시 도시락 8팩',
+     body:'단백질 양 대비 가격이 합리적이라 운동 후 끼니로 잘 챙겨 먹어요. 한 가지 바라는 점은 매운맛 메뉴가 더 있었으면! 그래도 전반적으로 만족해 또 시켰습니다.',
+     photos:[],helpful:7,tags:['muscle'],reply:''},
+    {name:'최은영',av:'최',date:'2026-06-02',rating:5,re:'재구매 6회',purpose:['간편식','직장인'],opt:'순수단백 12팩',
+     body:'회사에서 점심으로 먹기 너무 편해요. 전자레인지 2분이면 끝나고 설거지도 없어서 바쁜 날 최고. 맛도 계속 업데이트되는 느낌이라 질리지 않아요.',
+     photos:['f6🍙','f3🍱'],helpful:18,tags:['photo','easy'],reply:'늘 함께해 주셔서 감사합니다 🙏'},
+    {name:'정다은',av:'정',date:'2026-05-28',rating:5,re:'포토',purpose:['체중감량','섭취 2개월'],opt:'밸런시 도시락 8팩',
+     body:'두 달 동안 저녁을 이걸로 바꿨더니 몸이 확실히 가벼워졌어요. 비포애프터 올려요! 무엇보다 배고픔 없이 관리되는 게 제일 좋아요.',
+     photos:['f1🥗','f4🥦','f5🍗','f6🍙'],helpful:31,tags:['photo','weight'],reply:''},
+    {name:'한지우',av:'한',date:'2026-05-24',rating:3,purpose:['혈당관리'],opt:'정기배송 샐러드',
+     body:'맛과 구성은 좋은데 가끔 배송이 예정보다 늦을 때가 있어요. 신선식품이라 더 신경 써주시면 별 5개 드릴게요!',
+     photos:[],helpful:5,tags:['blood'],reply:'배송 지연 죄송합니다. 콜드체인 개선 중이에요. 꼭 챙기겠습니다!'},
+    {name:'오세라',av:'오',date:'2026-05-20',rating:5,re:'재구매 3회',purpose:['근성장','벌크업'],opt:'순수단백 닭가슴살 12팩',
+     body:'헬스 끝나고 단백질 채우기 딱이에요. 닭가슴살이 촉촉해서 그냥도 잘 먹습니다. 가성비까지 좋아 주변에 다 추천 중!',
+     photos:['f5🍗'],helpful:14,tags:['photo','muscle'],reply:''},
+    {name:'서가람',av:'서',date:'2026-05-16',rating:5,re:'포토',purpose:['간편식','자취'],opt:'밸런시 도시락 4팩',
+     body:'자취하면서 끼니 챙기기 힘들었는데 이거 덕분에 든든하게 먹어요. 양념이 강하지 않아서 매일 먹어도 부담 없어요. 사진처럼 비주얼도 깔끔!',
+     photos:['f3🍱','f1🥗'],helpful:9,tags:['photo','easy'],reply:''}
+  ];
+
+  var KEYWORDS = [
+    {label:'포만감 좋아요',n:1012,tag:'weight'},
+    {label:'맛있어요',n:884,tag:'easy'},
+    {label:'배송 빨라요',n:671,tag:''},
+    {label:'혈당 안정',n:342,tag:'blood'},
+    {label:'간편해요',n:318,tag:'easy'},
+    {label:'근성장',n:204,tag:'muscle'}
+  ];
+
+  var FILTERS = [
+    {key:'all',label:'전체'},{key:'photo',label:'📷 포토·동영상'},{key:'high',label:'⭐ 5점'},{key:'low',label:'4점 이하'},
+    {key:'weight',label:'🎯 체중감량'},{key:'blood',label:'🩸 혈당관리'},{key:'muscle',label:'💪 근성장'}
+  ];
+
+  var state={filter:'all',sort:'best'};
+  var $=function(s){return document.querySelector(s)};
+
+  // distribution
+  function renderDist(){
+    var d=[{s:5,p:89,n:2163},{s:4,p:8,n:194},{s:3,p:2,n:49},{s:2,p:1,n:16},{s:1,p:1,n:9}];
+    $('#yd-dist').innerHTML=d.map(function(r){
+      return '<div class="row" data-star="'+r.s+'"><span class="lab">'+r.s+'★</span><div class="bar"><span style="width:'+r.p+'%"></span></div><span class="pc">'+r.n.toLocaleString()+'</span></div>';
+    }).join('');
+    $('#yd-dist').querySelectorAll('.row').forEach(function(row){
+      row.onclick=function(){
+        var s=+row.dataset.star;
+        state.filter=(s===5?'high':'low');
+        syncUI(); render();
+      };
+    });
+  }
+  // keywords
+  function renderKw(){
+    var box=$('#yd-kw');
+    box.innerHTML='<span class="kt">자주 나온 말</span>'+KEYWORDS.map(function(k){
+      return '<span class="kw" data-tag="'+k.tag+'">'+k.label+' <b>'+k.n.toLocaleString()+'</b></span>';
+    }).join('');
+    box.querySelectorAll('.kw').forEach(function(c){
+      c.onclick=function(){ state.filter=c.dataset.tag||'all'; syncUI(); render(); };
+    });
+  }
+  // photo strip (from reviews having photos)
+  function renderStrip(){
+    var ph=[];
+    REVIEWS.forEach(function(r){r.photos.forEach(function(p){ph.push(p)})});
+    while(ph.length<7) ph.push('f6🍙');
+    $('#yd-strip').innerHTML=ph.slice(0,7).map(function(p,i){
+      var cls=p.slice(0,2),em=p.slice(2);
+      var more=i===6?'<span style="position:absolute;inset:0;background:rgba(40,52,23,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;border-radius:9px">+806</span>':'';
+      return '<div class="pthumb '+cls+'" data-cls="'+cls+'" data-em="'+em+'">'+em+more+'</div>';
+    }).join('');
+    $('#yd-strip').querySelectorAll('.pthumb').forEach(function(t){
+      t.onclick=function(){openLb(t.dataset.cls,t.dataset.em,'고객 포토 후기')};
+    });
+  }
+  // filters
+  function renderFilters(){
+    $('#yd-filters').innerHTML=FILTERS.map(function(f){
+      return '<span class="fchip'+(f.key===state.filter?' on':'')+'" data-k="'+f.key+'">'+f.label+'</span>';
+    }).join('');
+    $('#yd-filters').querySelectorAll('.fchip').forEach(function(c){
+      c.onclick=function(){state.filter=c.dataset.k; syncUI(); render();};
+    });
+  }
+  function syncUI(){
+    $('#yd-filters').querySelectorAll('.fchip').forEach(function(c){c.classList.toggle('on',c.dataset.k===state.filter)});
+    $('#yd-kw').querySelectorAll('.kw').forEach(function(c){c.classList.toggle('on',(c.dataset.tag||'all')===state.filter)});
+  }
+  // list
+  function passFilter(r){
+    var f=state.filter;
+    if(f==='all') return true;
+    if(f==='photo') return r.photos.length>0;
+    if(f==='high') return r.rating===5;
+    if(f==='low') return r.rating<=4;
+    return (r.tags||[]).indexOf(f)>=0;
+  }
+  function sortFn(a,b){
+    if(state.sort==='recent') return a.date<b.date?1:-1;
+    if(state.sort==='rating') return b.rating-a.rating || b.helpful-a.helpful;
+    return b.helpful-a.helpful;
+  }
+  function stars(n){var s='';for(var i=1;i<=5;i++)s+='<i'+(i>n?' class="off"':'')+'>★</i>';return '<span class="stars">'+s+'</span>';}
+  function render(){
+    var list=REVIEWS.filter(passFilter).slice().sort(sortFn);
+    $('#yd-count').textContent='필터 결과 '+list.length+'개';
+    $('#yd-list').innerHTML=list.map(function(r){
+      var badge=r.re?('<span class="rc-badge'+(/재구매/.test(r.re)?' re':'')+'">'+r.re+'</span>'):'';
+      var purpose=r.purpose.map(function(p){return '<span class="ptag">#'+p+'</span>'}).join('');
+      var photos=r.photos.length?'<div class="rc-photos">'+r.photos.map(function(p){var c=p.slice(0,2),e=p.slice(2);return '<div class="rc-photo '+c+'" data-cls="'+c+'" data-em="'+e+'">'+e+'</div>'}).join('')+'</div>':'';
+      var reply=r.reply?'<div class="rc-reply"><div class="who">🥗 윤식단 드림</div>'+r.reply+'</div>':'';
+      return '<div class="rcard">'+
+        '<div class="rc-top"><div class="rc-av">'+r.av+'</div><div><div class="rc-name">'+r.name.charAt(0)+'**'+badge+'</div><div class="rc-sub">'+r.date+' · 도움돼요 '+r.helpful+'</div></div>'+stars(r.rating).replace('class="stars"','class="stars" style="margin-left:auto"')+'</div>'+
+        '<span class="rc-opt">구매옵션 · '+r.opt+'</span>'+
+        '<div class="rc-purpose">'+purpose+'</div>'+
+        '<div class="rc-body">'+r.body+'</div>'+photos+
+        '<div class="rc-foot"><span class="helpful" data-h="'+r.helpful+'">👍 도움돼요 <span>'+r.helpful+'</span></span><span style="font-size:12px;color:var(--ink3);cursor:pointer">신고</span></div>'+
+        reply+'</div>';
+    }).join('') || '<div style="padding:40px;text-align:center;color:var(--ink3)">해당 조건의 리뷰가 없습니다.</div>';
+    // wire photo clicks + helpful
+    $('#yd-list').querySelectorAll('.rc-photo').forEach(function(p){p.onclick=function(){openLb(p.dataset.cls,p.dataset.em,'고객 포토 후기')}});
+    $('#yd-list').querySelectorAll('.helpful').forEach(function(h){h.onclick=function(){var s=h.querySelector('span');if(h.classList.toggle('on'))s.textContent=(+s.textContent+1);else s.textContent=(+s.textContent-1);}});
+  }
+  // lightbox
+  window.openLb=function(cls,em,cap){var i=$('#lb-img');i.className='img '+cls;i.textContent=em;$('#lb-cap').textContent=cap;$('#lb').classList.add('on')};
+  window.closeLb=function(){$('#lb').classList.remove('on')};
+
+  // sort
+  $('#yd-sort').onchange=function(){state.sort=this.value; render();};
+
+  // ---------- write form interactivity ----------
+  var picked=0;
+  var sin=$('#starin');
+  function paintStars(n){sin.querySelectorAll('i').forEach(function(x){x.classList.toggle('on',+x.dataset.v<=n)})}
+  sin.querySelectorAll('i').forEach(function(x){
+    x.onmouseenter=function(){paintStars(+x.dataset.v)};
+    x.onclick=function(){picked=+x.dataset.v;paintStars(picked)};
+  });
+  sin.onmouseleave=function(){paintStars(picked)};
+  document.querySelectorAll('.opts').forEach(function(g){
+    g.querySelectorAll('.opt').forEach(function(o){o.onclick=function(){o.classList.toggle('on')}});
+  });
+  var hasPhoto=false,hasVideo=false;
+  function calcReward(){
+    var base=200,p=hasPhoto?200:0,v=hasVideo?500:0;var det=['기본 200'];
+    if(hasPhoto)det.push('사진 200'); if(hasVideo)det.push('동영상 500');
+    $('#reward').textContent=(base+p+v)+'P';
+    $('#reward-detail').textContent='('+det.join(' + ')+')';
+  }
+  $('#up-photo').onclick=function(){hasPhoto=!hasPhoto;this.classList.toggle('on',hasPhoto);calcReward()};
+  $('#up-video').onclick=function(){hasVideo=!hasVideo;this.classList.toggle('on',hasVideo);calcReward()};
+
+  // init
+  renderDist();renderKw();renderStrip();renderFilters();render();
+})();
+</script>
+</body>
+</html>

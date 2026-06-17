@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>윤식단 리뷰 시스템 — 실행 가이드 (아임웹 적용 + 실제 코드)</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+:root{
+  --g900:#283417;--g700:#445a26;--g600:#5a7531;--g500:#6f8a3f;--g100:#e9efd8;--g50:#f3f6e9;
+  --cream:#f6f3ea;--paper:#fff;--ink:#232a1b;--ink2:#5c6450;--ink3:#8c917f;
+  --amber:#ffb01f;--amberD:#b9760a;--rose:#cf5a47;--roseBg:#fbece8;--roseInk:#8f3325;
+  --blue:#3a6ea5;--blueBg:#eaf2fb;--line:#e7e3d6;--line2:#d7d2c2;
+  --shadow:0 1px 2px rgba(40,52,23,.05),0 8px 24px rgba(40,52,23,.07);
+  --code-bg:#1c2114;--code-ink:#e6ecd6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',-apple-system,system-ui,sans-serif;color:var(--ink);background:var(--cream);line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto;padding:0 20px}
+a{color:inherit}
+.topnote{background:var(--g900);color:#eef3e2;text-align:center;font-size:13px;padding:10px 18px}
+.topnote a{color:#cfe08a;font-weight:700}
+.hero{background:linear-gradient(160deg,#2b3a1c,#46602a);color:#fff;padding:44px 0 38px}
+.hero h1{font-size:28px;font-weight:800;letter-spacing:-.02em}
+.hero p{margin-top:12px;font-size:15px;color:rgba(255,255,255,.85);max-width:640px}
+.sec{padding:38px 0;border-top:1px solid var(--line)}
+.eyebrow{font-size:12px;font-weight:800;letter-spacing:.06em;color:var(--g600);text-transform:uppercase;margin-bottom:8px}
+h2{font-size:23px;font-weight:800;letter-spacing:-.02em}
+h2 .n{color:var(--g500);margin-right:8px}
+.lead{font-size:15px;color:var(--ink2);margin-top:10px;max-width:760px}
+h3{font-size:17px;font-weight:800;margin:26px 0 10px}
+p.t{font-size:14px;color:var(--ink2);margin-bottom:8px;line-height:1.7}
+.note{border-left:4px solid var(--g500);background:var(--g50);padding:14px 18px;border-radius:0 10px 10px 0;font-size:14px;color:var(--g900);margin:16px 0;line-height:1.7}
+.note.amber{border-color:var(--amber);background:#fff8e8;color:#7a5208}
+.note.rose{border-color:var(--rose);background:var(--roseBg);color:var(--roseInk)}
+.note b{font-weight:800}
+.badge{display:inline-block;font-size:11.5px;font-weight:800;padding:3px 10px;border-radius:99px}
+.badge.rec{background:var(--g100);color:var(--g700)}
+.badge.code{background:var(--blueBg);color:var(--blue)}
+/* steps */
+.steps{counter-reset:s;list-style:none;margin-top:8px}
+.steps li{position:relative;padding:14px 16px 14px 56px;background:var(--paper);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;box-shadow:var(--shadow);font-size:14px;color:var(--ink2);line-height:1.6}
+.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:14px;top:14px;width:28px;height:28px;border-radius:8px;background:var(--g700);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+.steps li b{color:var(--ink);font-weight:800}
+.steps li code,.t code,.note code{background:#eceadf;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:12.5px;font-family:ui-monospace,Menlo,monospace;color:var(--g900)}
+/* code block */
+.codewrap{margin:14px 0;border-radius:12px;overflow:hidden;border:1px solid #2c3320;box-shadow:var(--shadow)}
+.codehead{background:#11150b;color:#cfe08a;font-size:12.5px;font-weight:700;padding:9px 14px;display:flex;align-items:center;gap:10px}
+.codehead .fn{font-family:ui-monospace,Menlo,monospace}
+.codehead .cp{margin-left:auto;background:#2c3a1c;color:#dce9bf;border:none;border-radius:7px;padding:5px 12px;font-size:11.5px;font-weight:700;cursor:pointer}
+.codehead .cp:hover{background:#3a4a25}
+pre{background:var(--code-bg);color:var(--code-ink);margin:0;padding:16px;overflow-x:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.65;max-height:440px}
+.dl{display:inline-flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.dl a{font-size:12.5px;font-weight:700;color:var(--g700);background:var(--g50);border:1px solid var(--g100);border-radius:8px;padding:7px 13px;text-decoration:none}
+.dl a:hover{background:var(--g100)}
+/* path cards */
+.paths{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px}
+.path{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
+.path.hot{border:2px solid var(--g500)}
+.path h4{font-size:16px;font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.path p{font-size:13px;color:var(--ink2);line-height:1.6;margin-top:6px}
+.path ul{list-style:none;margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.path li{font-size:12.5px;color:var(--ink2);padding-left:16px;position:relative}
+.path li::before{content:"·";position:absolute;left:4px;color:var(--g500);font-weight:800}
+.check{list-style:none;display:flex;flex-direction:column;gap:9px;margin-top:6px}
+.check li{display:flex;gap:10px;font-size:14px;color:var(--ink2);line-height:1.55}
+.check .b{flex:0 0 auto;width:22px;height:22px;border-radius:6px;background:var(--g100);color:var(--g700);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}
+.foot{background:var(--g900);color:rgba(255,255,255,.7);text-align:center;font-size:12.5px;padding:26px 18px;line-height:1.7}
+.foot a{color:#cfe08a;font-weight:700}
+@media(max-width:640px){.paths{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="topnote">🛠 실제 적용 가이드 + 붙여넣는 코드 · <a href="index.html">← 분석 리포트</a> · <a href="demo.html">작동 데모 →</a></div>
+
+<div class="hero">
+  <div class="wrap">
+    <h1>실행 가이드 — 자사몰에 어떻게 적용하나</h1>
+    <p>윤식단 자사몰은 <b>아임웹(Imweb)</b> 기반입니다. 실제 코드를 확인해, ① 데이터 통합(권장)과 ② 즉시 적용 코드 두 경로로 정리했습니다. 아래 코드는 yundiet.com의 실제 셀렉터를 타겟합니다.</p>
+  </div>
+</div>
+
+<!-- WHY -->
+<section class="sec">
+  <div class="wrap">
+    <div class="eyebrow">먼저 · 문제의 핵심</div>
+    <h2><span class="n">0</span>리뷰가 '0개'인 진짜 이유</h2>
+    <p class="lead">디자인을 아무리 바꿔도, <b>보여줄 리뷰가 자사몰에 없으면</b> 빈 화면입니다. 윤식단의 리뷰는 네이버 스마트스토어·쿠팡에 쌓여 있고 자사몰(아임웹)엔 통합돼 있지 않습니다. 그래서 순수단백 상품도 <code>구매평 (0)</code>으로 보입니다.</p>
+    <div class="note rose"><b>결론:</b> ① <b>데이터 통합</b>(타 채널 리뷰 → 자사몰)과 ② <b>UI 개선</b>(아래 코드)을 함께 해야 합니다. 통합은 CREMA가, UI 폴리시는 코드가 담당합니다.</div>
+  </div>
+</section>
+
+<!-- PATHS -->
+<section class="sec">
+  <div class="wrap">
+    <div class="eyebrow">두 가지 경로</div>
+    <h2><span class="n">1</span>무엇을 선택하나</h2>
+    <div class="paths">
+      <div class="path hot">
+        <h4>경로 A · CREMA 연동 <span class="badge rec">권장</span></h4>
+        <p>아임웹 공식 연동. <b>네이버·쿠팡 리뷰를 자사몰로 자동 수집</b>하고, 분포·포토·필터·정렬 위젯을 제공. "리뷰 0개"를 근본 해결.</p>
+        <ul><li>설정 위주(코딩 최소)</li><li>프로/글로벌 요금제 1개월 무료체험</li><li>데이터 통합 = 가장 큰 임팩트</li></ul>
+      </div>
+      <div class="path">
+        <h4>경로 B · 커스텀 코드 <span class="badge code">즉시</span></h4>
+        <p>아임웹에 CSS/JS를 붙여 <b>상단 별점 바·별점 분포·키워드·카드 배지</b>를 즉시 노출. 집계 수치를 직접 입력해 바로 신뢰 지표를 보여줌.</p>
+        <ul><li>CREMA 도입 전/후 모두 사용</li><li>아래 전체 코드 제공</li><li>상단 바·카드 배지는 CREMA와 병행 가능</li></ul>
+      </div>
+    </div>
+    <div class="note"><b>추천 순서:</b> 경로 B(코드)로 <b>오늘 바로</b> 상단 별점 바·카드 배지를 켜고 → 경로 A(CREMA)로 <b>이번 달 안에</b> 네이버/쿠팡 리뷰를 통합. 그러면 빈 화면 없이 단계적으로 좋아집니다.</div>
+  </div>
+</section>
+
+<!-- CREMA -->
+<section class="sec">
+  <div class="wrap">
+    <div class="eyebrow">경로 A</div>
+    <h2><span class="n">2</span>CREMA 연동 (데이터 통합)</h2>
+    <ol class="steps">
+      <li><b>아임웹 앱/연동에서 'CREMA(크리마) 리뷰' 신청</b> — 아임웹은 2024년부터 크리마와 공식 연동. 프로/글로벌 요금제는 1개월 무료체험.</li>
+      <li><b>크리마 관리자에서 채널 리뷰 가져오기 설정</b> — 네이버 스마트스토어·쿠팡·지그재그 등 기존 리뷰를 자사몰로 import. (이 단계가 "0개" 문제를 해결)</li>
+      <li><b>아임웹 디자인 모드에서 위젯 배치</b> — 상품 상세에 '리뷰 위젯', 목록에 '별점 위젯', 상단에 '리뷰 요약'을 드래그로 삽입.</li>
+      <li><b>브랜드 톤 맞춤</b> — 아래 <code>yundiet-review.css</code>의 색·라운드 값으로 위젯을 윤식단 톤(올리브/크림)에 맞춤.</li>
+      <li><b>수집 자동화</b> — 구매 후 알림톡 리뷰 요청 + 포토/동영상 차등 적립으로 신규 리뷰 수집률을 끌어올림.</li>
+    </ol>
+    <div class="note amber"><b>팁:</b> CREMA를 켜면 분포/카드 위젯은 CREMA가 그립니다. 그땐 <code>yundiet-review.js</code>의 <code>INJECT_WIDGET=false</code>로 두고, <b>상단 별점 바 + 카드 배지만</b> 우리 코드로 유지하면 충돌이 없습니다.</div>
+  </div>
+</section>
+
+<!-- CODE -->
+<section class="sec">
+  <div class="wrap">
+    <div class="eyebrow">경로 B · 실제 코드</div>
+    <h2><span class="n">3</span>아임웹에 붙여넣기</h2>
+
+    <h3>어디에 붙이나 (아임웹 위치)</h3>
+    <ol class="steps">
+      <li>관리자 <b>[사이트 설정 &gt; 고급]</b>의 <b>head/body 코드 입력</b>으로 이동. (또는 <b>[디자인 모드 &gt; 코드 입력]</b> 위젯을 상품 상세/목록 페이지에 추가)</li>
+      <li><b>&lt;head&gt;</b> 영역에 아래 <b>CSS</b>를 <code>&lt;style&gt;…&lt;/style&gt;</code>로 감싸 붙여넣기.</li>
+      <li><b>&lt;/body&gt; 직전</b> 영역에 아래 <b>JS</b>를 <code>&lt;script&gt;…&lt;/script&gt;</code>로 감싸 붙여넣기.</li>
+      <li>JS 상단 <code>DATA</code>에 <b>상품별 집계 수치</b>(네이버/쿠팡 합산 평균·리뷰수·분포·키워드)를 입력. 키는 <code>shop_view?idx=NNN</code>의 숫자.</li>
+      <li>상품 상세/목록 페이지를 새로고침해 <b>상단 별점 바·분포·키워드·카드 배지</b> 노출 확인.</li>
+    </ol>
+
+    <div class="note"><b>가장 빠른 테스트(호스팅 참조):</b> 아래 두 줄만 붙여도 동작합니다. 운영에는 인라인(직접 붙여넣기)을 권장합니다.
+    <div class="codewrap"><div class="codehead"><span class="fn">quick-include (테스트용)</span><button class="cp" data-t="quick">복사</button></div><pre id="quick">&lt;link rel="stylesheet" href="https://2019yundiet-cloud.github.io/yundiet-review-report/code/yundiet-review.css"&gt;
+&lt;script src="https://2019yundiet-cloud.github.io/yundiet-review-report/code/yundiet-review.js" defer&gt;&lt;/script&gt;</pre></div></div>
+
+    <h3>① CSS — <code>yundiet-review.css</code></h3>
+    <p class="t">디자인(상단 바·분포·키워드·카드 배지 + 아임웹 기본 리뷰 재스타일).</p>
+    <div class="codewrap"><div class="codehead"><span class="fn">yundiet-review.css</span><button class="cp" data-t="css">복사</button></div><pre id="css"></pre></div>
+
+    <h3>② JS — <code>yundiet-review.js</code></h3>
+    <p class="t">상단 바·분포·키워드·카드 배지 주입 + 부드러운 스크롤. 실제 셀렉터(<code>.sale_price.pay_number</code>, <code>.prod_detail_review</code>, <code>a[href*="shop_view"]</code>)를 타겟하고, 아임웹의 비동기 렌더를 <code>MutationObserver</code>로 대응합니다.</p>
+    <div class="codewrap"><div class="codehead"><span class="fn">yundiet-review.js</span><button class="cp" data-t="js">복사</button></div><pre id="js"></pre></div>
+
+    <div class="dl">
+      <a href="code/yundiet-review.css" download>⬇ CSS 파일</a>
+      <a href="code/yundiet-review.js" download>⬇ JS 파일</a>
+      <a href="code/README.txt" download>⬇ README</a>
+    </div>
+
+    <div class="note amber"><b>DATA 입력 예시</b> — JS 상단의 <code>DATA</code>에 이렇게 넣으세요:
+    <div class="codewrap"><div class="codehead"><span class="fn">DATA 예시</span><button class="cp" data-t="data">복사</button></div><pre id="data">var DATA = {
+  1096: { avg: 4.9, count: 2431, repurchase: 68,
+          dist: [89, 8, 2, 1, 1],   // 5★→1★ 비율(%)
+          keywords: [['포만감 좋아요',1012], ['맛있어요',884], ['배송 빨라요',671], ['혈당 안정',342]] },
+  // 1097: { avg:4.8, count:1204, repurchase:55, dist:[85,10,3,1,1], keywords:[['간편해요',420]] }
+};</pre></div></div>
+  </div>
+</section>
+
+<!-- CHECK -->
+<section class="sec">
+  <div class="wrap">
+    <div class="eyebrow">적용 후</div>
+    <h2><span class="n">4</span>확인 체크리스트</h2>
+    <ul class="check">
+      <li><span class="b">✓</span>상품 상세 상단(가격 아래)에 <b>★별점 요약 바</b>가 보이고 '후기 보기' 클릭 시 리뷰로 스크롤되나?</li>
+      <li><span class="b">✓</span>리뷰 영역 상단에 <b>평균 별점 + 별점 분포 막대 + 키워드 칩</b>이 보이나?</li>
+      <li><span class="b">✓</span>상품 목록 카드(있는 idx)에 <b>별점 배지</b>가 붙나?</li>
+      <li><span class="b">✓</span>모바일·PC 양쪽에서 정상 노출되나? (아임웹은 PC/모바일 DOM이 분리됨)</li>
+      <li><span class="b">✓</span>(CREMA 도입 시) 위젯 충돌 없도록 <code>INJECT_WIDGET=false</code>로 두었나?</li>
+    </ul>
+    <div class="note rose"><b>주의:</b> 커스텀 코드는 '숫자를 보여주는' 단계입니다. 실제 후기 본문·사진을 자사몰에 쌓으려면 <b>CREMA 연동(경로 A)</b>이 필요합니다. 둘을 함께 써야 완성됩니다.</div>
+  </div>
+</section>
+
+<div class="foot">
+  윤식단 리뷰 시스템 실행 가이드 · 코드는 yundiet.com 실제 구조 기준(2026-06)<br>
+  <a href="index.html">분석 리포트</a> · <a href="demo.html">작동 데모</a> · 코드: <a href="code/yundiet-review.js">JS</a> / <a href="code/yundiet-review.css">CSS</a>
+</div>
+
+<!-- ===== 원본 코드(텍스트) : 화면 표시 + 복사용 ===== -->
+<script type="text/plain" id="src-css">/* ============================================================
+   윤식단 자사몰(아임웹) 리뷰 UI 개선 — CSS
+   적용: 아임웹 [디자인 모드 > 코드 입력] 또는 head 공통 CSS
+   아임웹 기본 리뷰 마크업을 재활용 + 주입 컴포넌트(.yd-*)
+   ============================================================ */
+:root{
+  --yd-green-900:#283417; --yd-green-700:#445a26; --yd-green-500:#6f8a3f;
+  --yd-green-100:#e9efd8; --yd-green-50:#f3f6e9;
+  --yd-amber:#ffb01f; --yd-amber-d:#b9760a; --yd-rose:#cf5a47;
+  --yd-ink:#232a1b; --yd-ink2:#5c6450; --yd-ink3:#8c917f;
+  --yd-line:#e7e3d6; --yd-paper:#fff;
+}
+/* ① 상단 별점 요약 바 */
+.yd-topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0;padding:12px 16px;
+  background:var(--yd-green-50);border:1px solid var(--yd-green-100);border-radius:10px}
+.yd-topbar .yd-stars{font-size:18px;letter-spacing:1px;color:var(--yd-amber);line-height:1}
+.yd-topbar .yd-stars .off{color:#ddd6c4}
+.yd-topbar .yd-score{font-size:19px;font-weight:800;color:var(--yd-green-900)}
+.yd-topbar .yd-meta{font-size:13px;color:var(--yd-ink2);font-weight:600}
+.yd-topbar .yd-meta b{color:var(--yd-green-700)}
+.yd-topbar .yd-go{margin-left:auto;cursor:pointer;border:none;font-size:12.5px;font-weight:800;
+  color:#fff;background:var(--yd-green-700);border-radius:8px;padding:8px 14px}
+/* ② 리뷰 위젯 헤더 (평균/분포/키워드) */
+.yd-summary{display:grid;grid-template-columns:160px 1fr;gap:20px;padding:22px;
+  border:1px solid var(--yd-line);border-radius:14px;background:var(--yd-paper);margin-bottom:14px}
+.yd-summary .yd-avg{text-align:center;border-right:1px solid var(--yd-line)}
+.yd-summary .yd-avg .big{font-size:42px;font-weight:800;color:var(--yd-green-900);line-height:1}
+.yd-summary .yd-avg .cnt{font-size:12px;color:var(--yd-ink2);margin-top:6px;font-weight:600}
+.yd-summary .yd-avg .cnt b{color:var(--yd-green-700)}
+.yd-dist{display:flex;flex-direction:column;gap:6px;justify-content:center}
+.yd-dist .row{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--yd-ink2)}
+.yd-dist .lab{width:30px;font-weight:700;color:var(--yd-ink)}
+.yd-dist .bar{flex:1;height:8px;background:#eee9da;border-radius:99px;overflow:hidden}
+.yd-dist .bar span{display:block;height:100%;background:var(--yd-amber);border-radius:99px}
+.yd-dist .pc{width:46px;text-align:right;font-weight:700;color:var(--yd-ink)}
+.yd-kw{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.yd-kw .kt{font-size:12px;font-weight:800;color:var(--yd-ink3)}
+.yd-kw .chip{font-size:12.5px;font-weight:700;background:var(--yd-green-50);color:var(--yd-green-700);
+  border:1px solid var(--yd-green-100);padding:6px 12px;border-radius:99px}
+/* ③ 상품 목록 카드 별점 배지 */
+.yd-card-badge{display:flex;align-items:center;gap:5px;margin:6px 0 2px}
+.yd-card-badge .s{color:var(--yd-amber);font-size:12px;letter-spacing:.5px}
+.yd-card-badge .s .off{color:#ddd6c4}
+.yd-card-badge .v{font-size:12px;font-weight:800;color:var(--yd-ink)}
+.yd-card-badge .c{font-size:11.5px;color:var(--yd-ink3)}
+/* ④ 아임웹 기본 리뷰 영역 업그레이드 */
+.prod_detail_review a[onclick*="openAddReview"]{background:var(--yd-green-700)!important;
+  border-color:var(--yd-green-700)!important;color:#fff!important;border-radius:8px!important;font-weight:700!important}
+.prod_detail_review li[class*="review"]{border-bottom:1px solid var(--yd-line)!important;padding:18px 4px!important}
+.prod_detail_review [class*="rating"] .on,.prod_detail_review .star_on{color:var(--yd-amber)!important}
+@media(max-width:600px){.yd-summary{grid-template-columns:1fr}
+  .yd-summary .yd-avg{border-right:none;border-bottom:1px solid var(--yd-line);padding-bottom:14px}}
+</script>
+
+<script type="text/plain" id="src-js">/* ============================================================
+   윤식단 자사몰(아임웹) 리뷰 UI 개선 — JS 주입 스크립트
+   1) 가격(.sale_price.pay_number) 아래 별점 요약 바
+   2) 리뷰영역(.prod_detail_review) 상단 평균/분포/키워드
+   3) 목록 카드(a[href*="shop_view"]) 별점 배지
+   4) '후기 보기' 부드러운 스크롤
+   적용: 아임웹 [사이트 설정>고급>body 스크립트] 또는 [코드 입력]
+   ============================================================ */
+(function () {
+  'use strict';
+  var INJECT_WIDGET = true;   // CREMA 도입 시 false
+  var INJECT_TOPBAR = true;
+  var INJECT_CARDS  = true;
+
+  // 상품별 집계 데이터 (idx = shop_view?idx=NNN). 네이버/쿠팡 합산 수치 입력.
+  var DATA = {
+    1096: { avg: 4.9, count: 2431, repurchase: 68,
+            dist: [89, 8, 2, 1, 1],
+            keywords: [['포만감 좋아요',1012],['맛있어요',884],['배송 빨라요',671],['혈당 안정',342]] }
+  };
+  var DEFAULT = { avg: 4.8, count: 0, repurchase: 0, dist: [88,8,2,1,1], keywords: [] };
+
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $all(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function getIdx(href) { var m = (href || location.href).match(/[?&]idx=(\d+)/); return m ? +m[1] : null; }
+  function cfg(idx) { return (idx && DATA[idx]) ? DATA[idx] : DEFAULT; }
+  function starsHTML(avg) { var f = Math.round(avg), s = ''; for (var i=1;i<=5;i++) s += '<span'+(i>f?' class="off"':'')+'>★</span>'; return s; }
+  function el(html) { var d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild; }
+  function once(n, f) { if (n.dataset[f]) return false; n.dataset[f] = '1'; return true; }
+
+  function injectTopbar() {
+    if (!INJECT_TOPBAR) return;
+    var price = $('.sale_price.pay_number') || $('[class*="sale_price"]');
+    if (!price) return;
+    var host = price.closest('.price_info,.detail_price,.product_info,.shop_view_info') || price.parentElement;
+    if (!host || !once(host,'ydTopbar')) return;
+    var d = cfg(getIdx());
+    if (!d.count) return;
+    var bar = el('<div class="yd-topbar"><span class="yd-stars">'+starsHTML(d.avg)+'</span>'+
+      '<span class="yd-score">'+d.avg.toFixed(1)+'</span>'+
+      '<span class="yd-meta">리뷰 <b>'+d.count.toLocaleString()+'</b>개'+
+      (d.repurchase?' · 재구매율 <b>'+d.repurchase+'%</b>':'')+'</span>'+
+      '<button type="button" class="yd-go">후기 보기 ↓</button></div>');
+    bar.querySelector('.yd-go').addEventListener('click', function () {
+      var t = $('#prod_detail_review_target') || $('.prod_detail_review') || $('[data-target="prod_detail_review"]');
+      if (t) t.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+    host.parentNode.insertBefore(bar, host.nextSibling);
+  }
+
+  function injectWidgetHeader() {
+    if (!INJECT_WIDGET) return;
+    var targets = $all('.prod_detail_review').filter(function(t){return t.offsetParent!==null;});
+    var box = targets[0] || $('.prod_detail_review');
+    if (!box || !once(box,'ydHeader')) return;
+    var d = cfg(getIdx());
+    if (!d.count) return;
+    var rows = d.dist.map(function (p,i){ var star=5-i, n=Math.round(d.count*p/100);
+      return '<div class="row"><span class="lab">'+star+'★</span><div class="bar"><span style="width:'+p+'%"></span></div><span class="pc">'+n.toLocaleString()+'</span></div>'; }).join('');
+    var kw = d.keywords.length ? ('<div class="yd-kw"><span class="kt">자주 나온 말</span>'+
+      d.keywords.map(function(k){return '<span class="chip">'+k[0]+' '+k[1].toLocaleString()+'</span>';}).join('')+'</div>') : '';
+    var header = el('<div class="yd-widget-head"><div class="yd-summary"><div class="yd-avg">'+
+      '<div class="big">'+d.avg.toFixed(1)+'</div>'+
+      '<div style="color:#ffb01f;font-size:18px;margin-top:4px">'+starsHTML(d.avg).replace(/class="off"/g,'style="color:#ddd6c4"')+'</div>'+
+      '<div class="cnt">총 <b>'+d.count.toLocaleString()+'</b>개 리뷰'+(d.repurchase?'<br>재구매율 <b>'+d.repurchase+'%</b>':'')+'</div></div>'+
+      '<div class="yd-dist">'+rows+'</div></div>'+kw+'</div>');
+    box.insertBefore(header, box.firstChild);
+  }
+
+  function injectCardBadges() {
+    if (!INJECT_CARDS) return;
+    $all('a[href*="shop_view"]').forEach(function (a) {
+      var idx = getIdx(a.getAttribute('href'));
+      if (!idx || !DATA[idx]) return;
+      var card = a.closest('li,.item,._item,[class*="prod"]') || a.parentElement;
+      if (!card || !once(card,'ydBadge')) return;
+      var d = DATA[idx];
+      var nameEl = card.querySelector('[class*="name"],[class*="title"],.subject') || a;
+      var badge = el('<div class="yd-card-badge"><span class="s">'+starsHTML(d.avg)+'</span>'+
+        '<span class="v">'+d.avg.toFixed(1)+'</span><span class="c">('+d.count.toLocaleString()+')</span></div>');
+      if (nameEl && nameEl.parentNode) nameEl.parentNode.insertBefore(badge, nameEl.nextSibling);
+      else card.appendChild(badge);
+    });
+  }
+
+  function run() { injectTopbar(); injectWidgetHeader(); injectCardBadges(); }
+  if (document.readyState !== 'loading') run();
+  else document.addEventListener('DOMContentLoaded', run);
+  var mo = new MutationObserver(function(){ run(); });
+  mo.observe(document.body, { childList:true, subtree:true });
+  setTimeout(function(){ mo.disconnect(); }, 8000);
+})();
+</script>
+
+<script>
+(function(){
+  // 코드 블록을 안전하게 표시 (HTML 파싱 없이 텍스트로)
+  document.getElementById('css').textContent = document.getElementById('src-css').textContent.trim();
+  document.getElementById('js').textContent  = document.getElementById('src-js').textContent.trim();
+  // 복사 버튼
+  var map = {
+    css:  function(){return document.getElementById('css').textContent;},
+    js:   function(){return document.getElementById('js').textContent;},
+    quick:function(){return document.getElementById('quick').textContent;},
+    data: function(){return document.getElementById('data').textContent;}
+  };
+  document.querySelectorAll('.cp').forEach(function(b){
+    b.addEventListener('click', function(){
+      var t = b.getAttribute('data-t'); var txt = map[t] ? map[t]() : '';
+      navigator.clipboard.writeText(txt).then(function(){
+        var o=b.textContent; b.textContent='복사됨 ✓'; setTimeout(function(){b.textContent=o;},1400);
+      }, function(){ b.textContent='복사 실패'; });
+    });
+  });
+})();
+</script>
+</body>
+</html>
