@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>윤식단 자사몰 리뷰 시스템 개선안 — 라라스윗 벤치마크 분석 + UX/UI 시안</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" rel="stylesheet">
+<style>
+:root{
+  --g900:#283417; --g800:#33451f; --g700:#445a26; --g600:#5a7531; --g500:#6f8a3f;
+  --g400:#8aa258; --g300:#b9cd8e; --g100:#e9efd8; --g50:#f3f6e9;
+  --cream:#f6f3ea; --paper:#ffffff; --ink:#232a1b; --ink2:#5c6450; --ink3:#8c917f;
+  --amber:#ffb01f; --amberD:#b9760a; --rose:#cf5a47; --roseBg:#fbece8; --roseInk:#8f3325;
+  --blue:#3a6ea5; --blueBg:#eaf2fb;
+  --line:#e7e3d6; --line2:#d7d2c2;
+  --shadow:0 1px 2px rgba(40,52,23,.04), 0 8px 24px rgba(40,52,23,.06);
+  --shadow2:0 2px 6px rgba(40,52,23,.08), 0 18px 40px rgba(40,52,23,.10);
+  --radius:14px; --radiusS:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;color:var(--ink);background:var(--cream);line-height:1.65;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.sec{padding:64px 0;border-top:1px solid var(--line)}
+.sec:first-of-type{border-top:none}
+
+/* ---------- top nav ---------- */
+.nav{position:sticky;top:0;z-index:50;background:rgba(246,243,234,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav .in{max-width:1120px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.nav .logo{font-weight:800;color:var(--g700);letter-spacing:-.02em;font-size:15px;white-space:nowrap}
+.nav .links{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+.nav a{font-size:13px;color:var(--ink2);text-decoration:none;padding:6px 11px;border-radius:8px;font-weight:600;transition:.15s}
+.nav a:hover{background:var(--g100);color:var(--g700)}
+
+/* ---------- hero ---------- */
+.hero{background:linear-gradient(160deg,#2b3a1c 0%,#3c5224 55%,#4f6a2c 100%);color:#fff;padding:74px 0 66px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-120px;top:-120px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(255,176,31,.22),transparent 70%)}
+.hero .wrap{position:relative;z-index:2}
+.hero .kick{display:inline-block;font-size:12.5px;font-weight:700;letter-spacing:.04em;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);padding:6px 13px;border-radius:99px;margin-bottom:20px}
+.hero h1{font-size:39px;line-height:1.22;font-weight:800;letter-spacing:-.03em;max-width:880px}
+.hero h1 b{color:#ffd47a}
+.hero p.sub{margin-top:18px;font-size:16.5px;color:rgba(255,255,255,.85);max-width:720px;line-height:1.7}
+.hero .meta{margin-top:26px;display:flex;gap:22px;flex-wrap:wrap;font-size:13px;color:rgba(255,255,255,.72)}
+.hero .meta b{color:#fff;font-weight:700}
+
+/* ---------- typography blocks ---------- */
+.eyebrow{font-size:13px;font-weight:800;letter-spacing:.08em;color:var(--g600);text-transform:uppercase;margin-bottom:10px}
+h2.t{font-size:29px;font-weight:800;letter-spacing:-.025em;line-height:1.25}
+h2.t .num{color:var(--g400);font-weight:800;margin-right:8px}
+.lead{font-size:16.5px;color:var(--ink2);margin-top:14px;max-width:780px;line-height:1.75}
+h3.st{font-size:20px;font-weight:800;letter-spacing:-.02em;margin:34px 0 14px;display:flex;align-items:center;gap:9px}
+.pill{display:inline-block;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:99px;letter-spacing:.02em}
+.pill.win{background:var(--g100);color:var(--g700)}
+.pill.bad{background:var(--roseBg);color:var(--roseInk)}
+.pill.amb{background:#fff3d6;color:var(--amberD)}
+
+/* ---------- metric cards ---------- */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:6px}
+.metric{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:20px 18px;box-shadow:var(--shadow)}
+.metric .v{font-size:32px;font-weight:800;letter-spacing:-.03em;color:var(--g700);line-height:1}
+.metric .v.rose{color:var(--rose)}
+.metric .l{font-size:13px;color:var(--ink2);margin-top:9px;font-weight:600;line-height:1.45}
+.metric .s{font-size:11.5px;color:var(--ink3);margin-top:5px}
+
+/* ---------- generic cards ---------- */
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feat{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.feat .ico{width:38px;height:38px;border-radius:10px;background:var(--g100);color:var(--g700);display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;margin-bottom:13px}
+.feat h4{font-size:15.5px;font-weight:800;letter-spacing:-.01em;margin-bottom:6px}
+.feat p{font-size:13.5px;color:var(--ink2);line-height:1.6}
+
+/* screenshot frames */
+.shot{border:1px solid var(--line2);border-radius:12px;overflow:hidden;box-shadow:var(--shadow2);background:#fff}
+.shot img{width:100%}
+.cap{font-size:12.5px;color:var(--ink3);margin-top:9px;text-align:center}
+.cap b{color:var(--ink2)}
+
+/* callout */
+.note{border-left:4px solid var(--g500);background:var(--g50);padding:16px 20px;border-radius:0 12px 12px 0;font-size:14.5px;color:var(--g800);margin-top:18px}
+.note.amber{border-color:var(--amber);background:#fff8e8;color:#7a5208}
+.note.rose{border-color:var(--rose);background:var(--roseBg);color:var(--roseInk)}
+.note b{font-weight:800}
+
+/* table */
+.tbl{width:100%;border-collapse:separate;border-spacing:0;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);font-size:13.5px}
+.tbl th,.tbl td{padding:13px 15px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl thead th{background:var(--g700);color:#fff;font-weight:700;font-size:13px;letter-spacing:-.01em}
+.tbl tbody tr:last-child td{border-bottom:none}
+.tbl td.c{text-align:center}
+.tbl .yes{color:var(--g600);font-weight:800}
+.tbl .no{color:var(--rose);font-weight:800}
+.tbl .hl{background:var(--g50)}
+.tbl tbody tr:nth-child(even){background:#fbfaf5}
+.tbl tbody tr:nth-child(even).hl{background:var(--g50)}
+
+/* priority rows */
+.prio{display:flex;flex-direction:column;gap:13px;margin-top:8px}
+.prow{display:grid;grid-template-columns:60px 1fr 150px;gap:16px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+.prow .rank{font-size:24px;font-weight:800;color:var(--g400);text-align:center}
+.prow h4{font-size:15.5px;font-weight:800;margin-bottom:4px}
+.prow p{font-size:13px;color:var(--ink2);line-height:1.55}
+.tags{display:flex;gap:6px;flex-direction:column;align-items:flex-end}
+.tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:7px;white-space:nowrap}
+.tag.imp{background:#fff3d6;color:var(--amberD)}
+.tag.eff{background:var(--g100);color:var(--g700)}
+
+/* ============ MOCKUP (시안) styling ============ */
+.mockstage{background:#eef0e6;border:1px solid var(--line2);border-radius:18px;padding:26px;box-shadow:inset 0 1px 3px rgba(0,0,0,.03)}
+.mocklbl{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.02em;margin-bottom:13px}
+.mocklbl .dot{width:9px;height:9px;border-radius:50%}
+.mocklbl.before .dot{background:var(--ink3)}
+.mocklbl.after .dot{background:var(--g500)}
+.mocklbl.before{color:var(--ink3)}
+.mocklbl.after{color:var(--g700)}
+.beforebox{background:#fff;border:1px solid #e3e3e0;border-radius:10px;padding:22px;color:#555;font-family:'Pretendard',sans-serif}
+
+/* stars */
+.stars{display:inline-flex;letter-spacing:1px;font-size:15px;line-height:1}
+.stars i{color:var(--amber)}
+.stars i.off{color:#dfd9c8}
+.stars.sm{font-size:12px}
+.stars.lg{font-size:22px}
+
+/* ---- review widget mock ---- */
+.rw{background:#fff;border-radius:16px;overflow:hidden;box-shadow:var(--shadow2);border:1px solid var(--line)}
+.rw .summary{display:grid;grid-template-columns:200px 1fr;gap:26px;padding:26px 28px;border-bottom:1px solid var(--line)}
+.rw .avgbox{text-align:center;border-right:1px solid var(--line);padding-right:8px}
+.rw .avgbox .big{font-size:50px;font-weight:800;color:var(--g800);line-height:1;letter-spacing:-.03em}
+.rw .avgbox .cnt{font-size:13px;color:var(--ink2);margin-top:9px;font-weight:600}
+.rw .avgbox .cnt b{color:var(--g700)}
+.dist{display:flex;flex-direction:column;gap:7px;justify-content:center}
+.dist .row{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink2)}
+.dist .row .lab{width:34px;font-weight:700;color:var(--ink)}
+.dist .bar{flex:1;height:9px;background:#eee9da;border-radius:99px;overflow:hidden}
+.dist .bar span{display:block;height:100%;background:var(--amber);border-radius:99px}
+.dist .row .pc{width:42px;text-align:right;font-weight:700;color:var(--ink)}
+.keywords{padding:18px 28px;border-bottom:1px solid var(--line);display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.keywords .kt{font-size:12px;font-weight:800;color:var(--ink3);margin-right:4px}
+.kw{font-size:12.5px;font-weight:700;background:var(--g50);color:var(--g700);border:1px solid var(--g100);padding:6px 12px;border-radius:99px}
+.kw b{color:var(--g600)}
+.photostrip{padding:18px 28px;border-bottom:1px solid var(--line)}
+.photostrip .h{font-size:13px;font-weight:800;margin-bottom:11px;display:flex;justify-content:space-between;align-items:center}
+.photostrip .h a{font-size:12px;color:var(--g600);font-weight:700;text-decoration:none}
+.pscroll{display:flex;gap:9px;overflow:hidden}
+.pthumb{width:86px;height:86px;border-radius:10px;flex:0 0 auto;display:flex;align-items:flex-end;justify-content:flex-start;padding:7px;font-size:24px;position:relative;overflow:hidden}
+.pthumb .more{position:absolute;inset:0;background:rgba(40,52,23,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800}
+.rwbar{display:flex;align-items:center;justify-content:space-between;padding:15px 28px;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);background:#fcfbf6}
+.filters{display:flex;gap:7px;flex-wrap:wrap}
+.fchip{font-size:12.5px;font-weight:700;border:1px solid var(--line2);background:#fff;color:var(--ink2);padding:7px 13px;border-radius:99px;cursor:default}
+.fchip.on{background:var(--g700);color:#fff;border-color:var(--g700)}
+.fchip.cam{display:inline-flex;align-items:center;gap:5px}
+.sortsel{font-size:12.5px;font-weight:700;color:var(--ink2);border:1px solid var(--line2);background:#fff;padding:7px 13px;border-radius:99px}
+
+/* review card */
+.rcard{padding:22px 28px;border-bottom:1px solid var(--line)}
+.rcard:last-child{border-bottom:none}
+.rc-top{display:flex;align-items:center;gap:11px;margin-bottom:11px}
+.rc-av{width:40px;height:40px;border-radius:50%;background:var(--g100);color:var(--g700);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex:0 0 auto}
+.rc-name{font-weight:800;font-size:14px}
+.rc-sub{font-size:11.5px;color:var(--ink3);margin-top:1px}
+.rc-badge{font-size:11px;font-weight:800;background:#fff3d6;color:var(--amberD);padding:2px 8px;border-radius:7px;margin-left:6px}
+.rc-badge.re{background:var(--g100);color:var(--g700)}
+.rc-opt{font-size:11.5px;color:var(--ink2);background:#f4f2ea;border-radius:8px;padding:6px 11px;display:inline-block;margin:3px 0 11px;font-weight:600}
+.rc-purpose{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0 11px}
+.ptag{font-size:11.5px;font-weight:700;color:var(--g600);background:var(--g50);border:1px solid var(--g100);padding:3px 10px;border-radius:99px}
+.rc-body{font-size:14px;color:#36402a;line-height:1.72}
+.rc-photos{display:flex;gap:8px;margin-top:13px}
+.rc-photo{width:100px;height:100px;border-radius:10px;flex:0 0 auto;display:flex;align-items:flex-end;padding:7px;font-size:26px}
+.rc-foot{display:flex;align-items:center;gap:16px;margin-top:14px}
+.helpful{font-size:12.5px;font-weight:700;color:var(--ink2);border:1px solid var(--line2);background:#fff;padding:6px 13px;border-radius:99px;display:inline-flex;align-items:center;gap:6px}
+.rc-reply{margin-top:13px;background:var(--g50);border-radius:10px;padding:13px 15px;font-size:12.5px;color:var(--g800);line-height:1.6}
+.rc-reply .who{font-weight:800;color:var(--g700);display:flex;align-items:center;gap:6px;margin-bottom:4px}
+
+/* product card mock */
+.pc{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.pc .thumb{height:150px;display:flex;align-items:center;justify-content:center;font-size:46px}
+.pc .body{padding:14px 15px}
+.pc .nm{font-size:14px;font-weight:700;letter-spacing:-.01em}
+.pc .rrow{display:flex;align-items:center;gap:6px;margin-top:8px}
+.pc .rrow .sc{font-size:12.5px;font-weight:800;color:var(--ink)}
+.pc .rrow .ct{font-size:12px;color:var(--ink3)}
+.pc .price{margin-top:9px;font-size:16px;font-weight:800;color:var(--g800)}
+.pc .price .dc{color:var(--rose);margin-right:6px}
+
+/* top summary bar mock */
+.topbar{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px 18px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow)}
+.topbar .sc{font-size:22px;font-weight:800;color:var(--g800)}
+.topbar .arw{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--g600);display:inline-flex;align-items:center;gap:5px}
+
+/* write form mock */
+.wf{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px 26px;box-shadow:var(--shadow2)}
+.wf h4{font-size:17px;font-weight:800;margin-bottom:4px}
+.wf .desc{font-size:13px;color:var(--ink2);margin-bottom:18px}
+.wf .fld{margin-bottom:17px}
+.wf .fld>label{font-size:13px;font-weight:800;display:block;margin-bottom:8px}
+.wf .opts{display:flex;gap:8px;flex-wrap:wrap}
+.wf .opt{font-size:12.5px;font-weight:700;border:1px solid var(--line2);border-radius:99px;padding:8px 14px;color:var(--ink2);background:#fff}
+.wf .opt.on{background:var(--g700);color:#fff;border-color:var(--g700)}
+.wf .ta{border:1px solid var(--line2);border-radius:10px;padding:13px;font-size:13px;color:var(--ink3);background:#fcfbf6;min-height:62px}
+.wf .uprow{display:flex;gap:10px}
+.wf .upbox{flex:1;border:1.5px dashed var(--line2);border-radius:10px;padding:16px;text-align:center;font-size:12.5px;color:var(--ink3);font-weight:600}
+.wf .reward{display:flex;align-items:center;gap:10px;background:#fff8e8;border:1px solid #f6e3ac;border-radius:10px;padding:12px 15px;font-size:12.5px;color:#7a5208;font-weight:600;margin-top:4px}
+.wf .reward b{color:var(--amberD);font-weight:800}
+.wf .submit{margin-top:18px;background:var(--g700);color:#fff;text-align:center;padding:13px;border-radius:10px;font-weight:800;font-size:14px}
+
+/* home review section mock */
+.homerev{background:linear-gradient(180deg,#fbfdf6,#f1f5e6);border:1px solid var(--g100);border-radius:18px;padding:28px}
+.homerev .hh{text-align:center;margin-bottom:22px}
+.homerev .hh .t{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.homerev .hh .s{font-size:13px;color:var(--ink2);margin-top:6px}
+.homerev .hh .agg{display:inline-flex;align-items:center;gap:8px;margin-top:12px;background:#fff;border:1px solid var(--g100);border-radius:99px;padding:7px 16px;font-size:13px;font-weight:800;color:var(--g800);box-shadow:var(--shadow)}
+.homegrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.hcard{background:#fff;border:1px solid var(--line);border-radius:13px;overflow:hidden;box-shadow:var(--shadow)}
+.hcard .ph{height:118px;display:flex;align-items:flex-end;padding:9px;font-size:30px}
+.hcard .tx{padding:11px 12px}
+.hcard .tx .stars{font-size:11px}
+.hcard .tx p{font-size:12px;color:#454e3a;line-height:1.5;margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hcard .tx .nm{font-size:11px;color:var(--ink3);margin-top:7px;font-weight:600}
+
+/* photo bg helpers (mock food photos) */
+.f1{background:linear-gradient(135deg,#dfe9c4,#b6cf86)}
+.f2{background:linear-gradient(135deg,#f3dca8,#e8b765)}
+.f3{background:linear-gradient(135deg,#e8c9a0,#d49b67)}
+.f4{background:linear-gradient(135deg,#cfe0d2,#9cc2a8)}
+.f5{background:linear-gradient(135deg,#f5d3c2,#e0a285)}
+.f6{background:linear-gradient(135deg,#e4dcc0,#c2b884)}
+
+/* roadmap */
+.road{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:10px}
+.phase{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.phase .ph-top{height:5px;position:absolute;top:0;left:0;right:0}
+.phase.p1 .ph-top{background:var(--g500)}
+.phase.p2 .ph-top{background:var(--amber)}
+.phase.p3 .ph-top{background:var(--blue)}
+.phase .when{font-size:12px;font-weight:800;color:var(--ink3);letter-spacing:.03em;margin-bottom:4px}
+.phase h4{font-size:17px;font-weight:800;margin-bottom:13px;letter-spacing:-.02em}
+.phase ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+.phase li{font-size:13px;color:var(--ink2);line-height:1.5;padding-left:22px;position:relative}
+.phase li::before{content:"";position:absolute;left:0;top:6px;width:13px;height:13px;border-radius:4px;background:var(--g100);border:1px solid var(--g300)}
+.phase li b{color:var(--ink);font-weight:700}
+
+/* misc lists */
+.checklist{list-style:none;display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.checklist li{display:flex;gap:12px;font-size:14.5px;color:var(--ink2);line-height:1.6}
+.checklist .mk{flex:0 0 auto;width:24px;height:24px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.checklist .mk.x{background:var(--roseBg);color:var(--roseInk)}
+.checklist .mk.c{background:var(--g100);color:var(--g700)}
+.checklist li b{color:var(--ink);font-weight:800}
+
+footer{background:var(--g900);color:rgba(255,255,255,.72);padding:40px 0;font-size:13px;line-height:1.8}
+footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
+footer b{color:#fff}
+footer a{color:#cfe0a8}
+.src{font-size:12px;color:var(--ink3);margin-top:14px;line-height:1.8}
+.src a{color:var(--g600)}
+
+@media(max-width:880px){
+  .metrics,.grid2,.grid3,.homegrid,.road{grid-template-columns:1fr 1fr}
+  .rw .summary{grid-template-columns:1fr;gap:18px}
+  .rw .avgbox{border-right:none;border-bottom:1px solid var(--line);padding-bottom:16px}
+  .prow{grid-template-columns:44px 1fr}
+  .tags{flex-direction:row;justify-content:flex-start;grid-column:1/-1}
+  .hero h1{font-size:30px}
+  h2.t{font-size:24px}
+}
+@media(max-width:560px){
+  .metrics,.grid2,.grid3,.homegrid,.road{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="in">
+    <span class="logo">🥗 윤식단 · 리뷰 시스템 개선안</span>
+    <div class="links">
+      <a href="#summary">요약</a>
+      <a href="#lara">라라스윗 분석</a>
+      <a href="#now">현재 진단</a>
+      <a href="#gap">갭 분석</a>
+      <a href="#strategy">개선 전략</a>
+      <a href="#solution">솔루션</a>
+      <a href="#design">UX/UI 시안</a>
+      <a href="#roadmap">로드맵</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <span class="kick">자사몰 리뷰 시스템 경쟁 분석 &amp; 개선 설계</span>
+    <h1>리뷰가 약한 게 아니라, <b>리뷰를 보여주는 방식</b>이 비어 있습니다.</h1>
+    <p class="sub">라라스윗의 리뷰 시스템·전략·구성을 해부하고, 윤식단 자사몰(아임웹)의 현재 리뷰 UX를 진단했습니다. 무엇을, 어떤 순서로, 어떻게 보여줄지 — 개선안과 함께 적용 후 화면 시안까지 담았습니다.</p>
+    <div class="meta">
+      <span>분석 대상 · <b>lalasweet.kr</b> (Cafe24+알파리뷰) vs <b>yundiet.com</b> (아임웹)</span>
+      <span>작성일 · <b>2026.06.17</b></span>
+      <span>구성 · <b>분석 → 전략 → 시안 → 로드맵</b></span>
+    </div>
+  </div>
+</header>
+
+<!-- EXECUTIVE SUMMARY -->
+<section class="sec" id="summary">
+  <div class="wrap">
+    <div class="eyebrow">한눈에 보기</div>
+    <h2 class="t">핵심 결론 3가지</h2>
+    <p class="lead">윤식단의 리뷰가 약해 보이는 진짜 원인은 "리뷰 수"가 아니라 ① 흩어진 리뷰를 자사몰로 <b>모으지 못했고</b>, ② 모인 리뷰를 <b>제대로 보여주지 못하며</b>, ③ 리뷰가 <b>구매로 이어지는 동선이 없다는 것</b>입니다.</p>
+
+    <div class="metrics" style="margin-top:28px">
+      <div class="metric">
+        <div class="v">67,578</div>
+        <div class="l">라라스윗 인기상품 리뷰 위젯 노출 수</div>
+        <div class="s">상품 페이지 상단 대문 노출</div>
+      </div>
+      <div class="metric">
+        <div class="v rose">0</div>
+        <div class="l">윤식단 순수단백 상품 구매평 수</div>
+        <div class="s">구매평(0) · Q&amp;A(0) 노출 중</div>
+      </div>
+      <div class="metric">
+        <div class="v">6배</div>
+        <div class="l">동영상 리뷰 본 고객의 구매 전환율 차이</div>
+        <div class="s">출처: 브이리뷰 / 포브스</div>
+      </div>
+      <div class="metric">
+        <div class="v">1~2%</div>
+        <div class="l">자사몰 평균 리뷰 수집률</div>
+        <div class="s">→ 리워드·리마인드로 끌어올림</div>
+      </div>
+    </div>
+
+    <div class="grid3" style="margin-top:24px">
+      <div class="feat">
+        <div class="ico">1</div>
+        <h4>리뷰를 "모으기"</h4>
+        <p>네이버 스마트스토어·쿠팡에 쌓인 수천 건의 리뷰가 자사몰엔 0건. 크리마(아임웹 공식연동)로 타 채널·SNS 리뷰를 자사몰로 끌어오면 즉시 신뢰 자산이 생깁니다.</p>
+      </div>
+      <div class="feat">
+        <div class="ico">2</div>
+        <h4>리뷰를 "보여주기"</h4>
+        <p>평균 별점·별점 분포·포토 갤러리·만족 키워드를 상품 상단과 목록 카드에 노출. 지금은 8.7만px 페이지 맨 끝에 텍스트로만 묻혀 있습니다.</p>
+      </div>
+      <div class="feat">
+        <div class="ico">3</div>
+        <h4>리뷰로 "팔기"</h4>
+        <p>다이어트 특화 리뷰(목적·재구매·비포애프터)와 베스트 후기를 홈·광고 소재로 재활용. 리뷰가 콘텐츠이자 전환 무기가 됩니다.</p>
+      </div>
+    </div>
+
+    <div class="note amber"><b>가장 빠른 한 방.</b> 아임웹은 2024년부터 크리마(CREMA)와 공식 연동됩니다. 프로/글로벌 요금제는 1개월 무료 체험 가능 — 네이버/쿠팡 리뷰 import만 켜도 "구매평 0개" 화면이 수천 건으로 바뀝니다.</div>
+  </div>
+</section>
+
+<!-- PART 1: LARA -->
+<section class="sec" id="lara">
+  <div class="wrap">
+    <div class="eyebrow">Part 1 · 벤치마크 해부</div>
+    <h2 class="t"><span class="num">01</span>라라스윗은 리뷰를 이렇게 다룬다</h2>
+    <p class="lead">라라스윗은 <b>Cafe24 + 알파리뷰(AlphaReview)</b> 조합을 쓰고, 리뷰를 단순 "게시판"이 아니라 <b>전환 엔진</b>으로 운영합니다. 상품 상세 안에 리뷰 위젯을 깊게 통합하고, 리뷰 전용 메뉴를 글로벌 내비에 배치했습니다.</p>
+
+    <div class="grid2" style="margin-top:28px">
+      <div>
+        <div class="shot"><img src="images/lala-review-widget-1.png" alt="라라스윗 상품 상세 리뷰 위젯"></div>
+        <div class="cap"><b>상품 상세 리뷰 위젯</b> — ★4.6 대문 별점 + 별점 분포 막대 + 포토&amp;동영상 필터 + 정렬. 누적 6.7만 건 노출.</div>
+      </div>
+      <div>
+        <div class="shot"><img src="images/lalasweet-review-board.png" alt="라라스윗 리뷰 전용 게시판"></div>
+        <div class="cap"><b>리뷰 전용 게시판(REVIEW)</b> — 누적 11,992건. 추천순/최신순/평점 정렬, 상품 태그, 거의 모든 글에 실사용 포토 다수.</div>
+      </div>
+    </div>
+
+    <h3 class="st">리뷰 위젯을 만드는 9가지 구성요소</h3>
+    <div class="grid3">
+      <div class="feat"><div class="ico">★</div><h4>평균 별점 대문</h4><p>★4.6을 큼직하게 노출 + 누적 리뷰 수(6.7만)를 강조해 첫인상에서 신뢰를 박아넣음.</p></div>
+      <div class="feat"><div class="ico">▦</div><h4>별점 분포 막대</h4><p>5★~1★ 각 비율을 막대로 시각화. 낮은 별점까지 투명하게 보여줘 오히려 신뢰도↑.</p></div>
+      <div class="feat"><div class="ico">📷</div><h4>포토·동영상 필터</h4><p>시각 리뷰만 골라보기 토글. UGC(실사용 사진)를 전면에 배치.</p></div>
+      <div class="feat"><div class="ico">⇅</div><h4>3종 정렬</h4><p>추천순(베스트)·최신순·평점 높은순. 베스트 리뷰가 기본으로 먼저 보임.</p></div>
+      <div class="feat"><div class="ico">🧑</div><h4>리치 리뷰 카드</h4><p>아바타·닉네임·날짜·별점·본문 + 사진 2~4장. 정보 밀도가 높음.</p></div>
+      <div class="feat"><div class="ico">🏷️</div><h4>상품 태그</h4><p>어떤 상품 리뷰인지 표기 → 게시판에서도 상품 탐색이 가능.</p></div>
+      <div class="feat"><div class="ico">🧭</div><h4>리뷰 전용 메뉴</h4><p>글로벌 내비에 REVIEW 탭. 리뷰 자체가 랜딩/콘텐츠 역할.</p></div>
+      <div class="feat"><div class="ico">👍</div><h4>추천·답글</h4><p>좋아요/답글로 상호작용 유도 → 리뷰가 커뮤니티처럼 살아있음.</p></div>
+      <div class="feat"><div class="ico">🔁</div><h4>전 상품 리뷰 풀링</h4><p>위젯이 연관·전체 리뷰까지 끌어와 신상품도 "리뷰 0개"가 안 됨.</p></div>
+    </div>
+
+    <div class="note"><b>전략적 포인트.</b> 라라스윗은 리뷰를 "고객이 찾아 들어가는 게시판"이 아니라 "구매 동선 위에 깔아두는 신뢰 레이어"로 씁니다. 별점은 상단에, 포토는 전면에, 베스트는 기본 정렬 — 스크롤하다 자연스럽게 후기를 밟고 지나가게 설계돼 있습니다.</p></div>
+  </div>
+</section>
+
+<!-- PART 2: NOW -->
+<section class="sec" id="now">
+  <div class="wrap">
+    <div class="eyebrow">Part 2 · 현재 진단</div>
+    <h2 class="t"><span class="num">02</span>윤식단 자사몰의 현재 리뷰</h2>
+    <p class="lead">윤식단은 <b>아임웹(Imweb) 기본 내장 리뷰</b>를 그대로 사용 중입니다. 별도 리뷰 솔루션이 없고, 리뷰는 상세페이지 최하단에 단순 목록으로만 존재합니다.</p>
+
+    <div class="grid2" style="margin-top:28px">
+      <div>
+        <div class="shot"><img src="images/yundiet-review-2.png" alt="윤식단 구매평 0개 화면"></div>
+        <div class="cap"><b>순수단백 상품의 구매평 영역</b> — "구매평(0) · 등록된 구매평이 없습니다." 평균 별점·분포·요약 전부 없음.</div>
+      </div>
+      <div>
+        <div class="shot"><img src="images/yundiet-store-list.png" alt="윤식단 상품 목록 카드"></div>
+        <div class="cap"><b>상품 목록 카드</b> — 이름·가격·할인만 노출. 별점/리뷰 수 배지가 없어 목록 단계의 소셜프루프가 0.</div>
+      </div>
+    </div>
+
+    <h3 class="st">진단: 6가지 구조적 빈틈</h3>
+    <ul class="checklist">
+      <li><span class="mk x">✕</span><div><b>리뷰가 자사몰에 안 모임.</b> 네이버 스마트스토어·쿠팡엔 후기가 쌓이는데 자사몰은 채널별로 단절돼 "구매평 0개"로 보임. (가장 큰 손실)</div></li>
+      <li><span class="mk x">✕</span><div><b>평균 별점·분포 차트가 없음.</b> 첫인상에서 신뢰를 줄 요약 지표가 화면에 존재하지 않음.</div></li>
+      <li><span class="mk x">✕</span><div><b>목록·상단에 소셜프루프 부재.</b> 상품 카드와 가격/구매 버튼 근처에 별점이 없어, 사는 순간에 후기가 보이지 않음.</div></li>
+      <li><span class="mk x">✕</span><div><b>리뷰가 페이지 맨 끝에 매몰.</b> 8.7만px 길이 상세 최하단에 위치. 사실상 능동적으로 찾아야 보임.</div></li>
+      <li><span class="mk x">✕</span><div><b>수집 동력이 약함.</b> 적립금(일반 200/장문 +200/포토 +200)은 있으나, 구매 후 리마인드·차등 보상·간편 작성 흐름이 미흡.</div></li>
+      <li><span class="mk c">△</span><div><b>다이어트 맥락이 안 담김.</b> 식단 카테고리의 핵심인 목적(체중·혈당·근성장)·재구매·비포애프터를 담을 양식이 없음. <span class="pill win">기회</span></div></li>
+    </ul>
+
+    <div class="note rose"><b>핵심 진단.</b> 윤식단의 문제는 "리뷰가 적다"가 아니라 <b>"있는 리뷰조차 안 보이고, 없는 자리(자사몰)엔 안 모은다"</b> 입니다. 도구 1개 연동 + 노출 위치 재설계로 단기간에 체감이 바뀝니다.</div>
+  </div>
+</section>
+
+<!-- PART 3: GAP -->
+<section class="sec" id="gap">
+  <div class="wrap">
+    <div class="eyebrow">Part 3 · 갭 분석</div>
+    <h2 class="t"><span class="num">03</span>라라스윗 vs 윤식단, 무엇이 다른가</h2>
+    <p class="lead">기능 단위로 직접 비교했습니다. 대부분은 "기술적으로 어렵다"가 아니라 "설정/도입을 안 했다"의 영역입니다.</p>
+
+    <table class="tbl" style="margin-top:24px">
+      <thead><tr><th style="width:26%">항목</th><th style="width:30%">라라스윗</th><th style="width:30%">윤식단 (현재)</th><th class="c" style="width:14%">상태</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td><b>리뷰 솔루션</b></td><td>알파리뷰(전문 솔루션)</td><td>아임웹 기본 내장</td><td class="c"><span class="no">갭 큼</span></td></tr>
+        <tr><td><b>타 채널 리뷰 통합</b></td><td>SNS·채널 리뷰 끌어옴</td><td>없음 (채널별 단절)</td><td class="c"><span class="no">없음</span></td></tr>
+        <tr><td><b>평균 별점 대문</b></td><td>★4.6 큼직하게</td><td>없음</td><td class="c"><span class="no">없음</span></td></tr>
+        <tr><td><b>별점 분포 차트</b></td><td>5★~1★ 막대</td><td>없음</td><td class="c"><span class="no">없음</span></td></tr>
+        <tr><td><b>상품 카드 별점</b></td><td>목록에 노출</td><td>없음</td><td class="c"><span class="no">없음</span></td></tr>
+        <tr><td><b>상단 별점 요약</b></td><td>구매 동선 위 노출</td><td>없음</td><td class="c"><span class="no">없음</span></td></tr>
+        <tr><td><b>포토·동영상 필터</b></td><td>전용 토글 + 갤러리</td><td>"포토 구매평만 보기"만 존재</td><td class="c"><span class="yes">일부</span></td></tr>
+        <tr><td><b>정렬 옵션</b></td><td>추천·최신·평점</td><td>제한적</td><td class="c"><span class="yes">일부</span></td></tr>
+        <tr><td><b>만족 키워드 요약</b></td><td>AI 키워드 집계</td><td>없음</td><td class="c"><span class="no">없음</span></td></tr>
+        <tr><td><b>리뷰 전용 페이지</b></td><td>REVIEW 메뉴</td><td>없음</td><td class="c"><span class="no">없음</span></td></tr>
+        <tr><td><b>추천·브랜드 답글</b></td><td>있음</td><td>없음</td><td class="c"><span class="no">없음</span></td></tr>
+        <tr class="hl"><td><b>리뷰 적립금</b></td><td>차등 보상 운영</td><td>200/+200/+200 (존재)</td><td class="c"><span class="yes">보유</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- PART 4: STRATEGY -->
+<section class="sec" id="strategy">
+  <div class="wrap">
+    <div class="eyebrow">Part 4 · 개선 전략</div>
+    <h2 class="t"><span class="num">04</span>무엇부터 할까 — 임팩트 우선순위</h2>
+    <p class="lead">"임팩트 대비 난이도"로 정렬한 7개 액션입니다. 1~3번만 해도 자사몰 리뷰 체감이 완전히 달라집니다.</p>
+
+    <div class="prio">
+      <div class="prow"><div class="rank">1</div><div><h4>네이버·쿠팡 리뷰를 자사몰로 통합</h4><p>크리마 import로 "구매평 0개"를 즉시 해소. 가장 큰 신뢰 자산을 0원에 가까운 노력으로 확보.</p></div><div class="tags"><span class="tag imp">임팩트 ●●●</span><span class="tag eff">난이도 낮음</span></div></div>
+      <div class="prow"><div class="rank">2</div><div><h4>평균 별점 + 분포 + 상단 요약 노출</h4><p>상품명·가격·구매 버튼 근처에 ★별점을 띄우고, 리뷰 영역 상단에 분포 차트를 배치.</p></div><div class="tags"><span class="tag imp">임팩트 ●●●</span><span class="tag eff">난이도 낮음</span></div></div>
+      <div class="prow"><div class="rank">3</div><div><h4>상품 목록 카드에 별점 배지</h4><p>탐색 단계에서부터 사회적 증거 제공 → 클릭률·진입 품질 상승.</p></div><div class="tags"><span class="tag imp">임팩트 ●●</span><span class="tag eff">난이도 낮음</span></div></div>
+      <div class="prow"><div class="rank">4</div><div><h4>포토 갤러리 + 만족 키워드 요약</h4><p>리뷰 사진을 가로 스트립으로 전면화. 자주 언급된 키워드를 칩으로 집계.</p></div><div class="tags"><span class="tag imp">임팩트 ●●</span><span class="tag eff">난이도 중간</span></div></div>
+      <div class="prow"><div class="rank">5</div><div><h4>리뷰 수집 엔진 가동</h4><p>구매 후 알림톡 리마인드 + 포토/동영상 차등 적립 + 간편 작성. 수집률 1~2%→상향.</p></div><div class="tags"><span class="tag imp">임팩트 ●●●</span><span class="tag eff">난이도 중간</span></div></div>
+      <div class="prow"><div class="rank">6</div><div><h4>다이어트 특화 리뷰 양식</h4><p>목적(체중·혈당·근성장)·섭취주차·재구매·비포애프터 항목으로 후기를 구조화.</p></div><div class="tags"><span class="tag imp">임팩트 ●●</span><span class="tag eff">난이도 중간</span></div></div>
+      <div class="prow"><div class="rank">7</div><div><h4>리뷰의 콘텐츠·광고화</h4><p>홈 "리얼 후기" 섹션 + 베스트 후기를 메타/네이버 광고 소재(UGC)로 재활용.</p></div><div class="tags"><span class="tag imp">임팩트 ●●</span><span class="tag eff">난이도 중간</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PART 5: SOLUTION -->
+<section class="sec" id="solution">
+  <div class="wrap">
+    <div class="eyebrow">Part 5 · 솔루션 선택</div>
+    <h2 class="t"><span class="num">05</span>아임웹에서 무엇을 붙일까</h2>
+    <p class="lead">윤식단은 아임웹 기반이므로 선택지가 정해져 있습니다. 결론부터: <b>크리마(CREMA)</b>가 1순위입니다. 아임웹 공식 연동이고, 타 채널 리뷰 import가 핵심 문제(리뷰 0개)를 바로 풀기 때문입니다.</p>
+
+    <table class="tbl" style="margin-top:24px">
+      <thead><tr><th>솔루션</th><th class="c">아임웹 연동</th><th class="c">타채널 리뷰 수집</th><th class="c">위젯/디자인</th><th class="c">동영상</th><th>한줄평</th></tr></thead>
+      <tbody>
+        <tr class="hl"><td><b>크리마 (CREMA)</b><br><span style="font-size:11.5px;color:var(--ink3)">★ 추천</span></td><td class="c yes">공식 연동</td><td class="c yes">강함</td><td class="c yes">우수</td><td class="c yes">지원</td><td>아임웹 디자인모드 위젯, 네이버/지그재그 등 import, 1개월 무료(프로·글로벌)</td></tr>
+        <tr><td><b>알파리뷰</b><br><span style="font-size:11.5px;color:var(--ink3)">라라스윗 사용</span></td><td class="c">제한적</td><td class="c yes">강함</td><td class="c yes">우수</td><td class="c yes">지원</td><td>Cafe24 중심. 아임웹 적용은 검토 필요</td></tr>
+        <tr><td><b>브이리뷰 (Vreview)</b></td><td class="c">검토</td><td class="c yes">있음</td><td class="c yes">좋음</td><td class="c yes">특화</td><td>동영상 리뷰에 강점(전환 6배 근거 제공처)</td></tr>
+        <tr><td><b>아임웹 기본</b><br><span style="font-size:11.5px;color:var(--ink3)">현재</span></td><td class="c yes">기본</td><td class="c no">불가</td><td class="c no">기본</td><td class="c">제한</td><td>무료지만 기능 한계 — 현재 상태의 원인</td></tr>
+      </tbody>
+    </table>
+
+    <div class="note"><b>추천 경로.</b> ① 크리마 1개월 무료로 시작 → ② 네이버/쿠팡 리뷰 import로 즉시 자산 확보 → ③ 위젯을 아래 시안대로 배치 → ④ 수집 자동화(알림톡·차등 적립) 가동. 동영상 비중을 빠르게 키우고 싶으면 브이리뷰를 병행 검토.</div>
+  </div>
+</section>
+
+<!-- PART 6: DESIGN MOCKUPS -->
+<section class="sec" id="design">
+  <div class="wrap">
+    <div class="eyebrow">Part 6 · UX/UI 시안</div>
+    <h2 class="t"><span class="num">06</span>바꾸면 이렇게 보입니다 (Before → After)</h2>
+    <p class="lead">아래는 윤식단 브랜드 톤으로 그린 적용 후 화면 시안입니다. 모든 숫자·후기는 예시지만, 구조와 배치는 그대로 적용 가능한 설계입니다.</p>
+
+    <!-- 6-1 TOP SUMMARY BAR -->
+    <h3 class="st">① 상품 상단 별점 요약 바 <span class="pill win">신규</span></h3>
+    <p style="font-size:14px;color:var(--ink2);margin-bottom:16px">상품명·가격·구매 버튼 바로 아래에 별점 요약을 띄워, 사는 순간 후기가 보이게 합니다. 클릭하면 리뷰 영역으로 스크롤.</p>
+    <div class="mockstage">
+      <div class="mocklbl before"><span class="dot"></span>BEFORE — 현재 (상단에 별점 없음)</div>
+      <div class="beforebox" style="margin-bottom:22px">
+        <div style="font-size:18px;font-weight:700;color:#333">순수단백 닭가슴살 도시락</div>
+        <div style="font-size:20px;font-weight:800;color:#222;margin-top:8px">12,900원</div>
+        <div style="font-size:12.5px;color:#999;margin-top:8px">— 별점·리뷰 요약 없음 · 후기는 페이지 최하단에만 존재 —</div>
+      </div>
+      <div class="mocklbl after"><span class="dot"></span>AFTER — 개선 시안</div>
+      <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px;box-shadow:var(--shadow)">
+        <div style="font-size:18px;font-weight:800">순수단백 닭가슴살 도시락</div>
+        <div style="font-size:22px;font-weight:800;color:var(--g800);margin-top:8px">12,900<span style="font-size:15px">원</span></div>
+        <div class="topbar" style="margin-top:14px">
+          <span class="stars lg"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span>
+          <span class="sc">4.9</span>
+          <span style="font-size:13px;color:var(--ink2);font-weight:600">리뷰 <b style="color:var(--g700)">2,431</b>개 · 재구매율 <b style="color:var(--g700)">68%</b></span>
+          <span class="arw">후기 보기 <i>↓</i></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6-2 PRODUCT CARD -->
+    <h3 class="st">② 상품 목록 카드에 별점 배지 <span class="pill win">신규</span></h3>
+    <p style="font-size:14px;color:var(--ink2);margin-bottom:16px">탐색 단계부터 사회적 증거를 제공합니다. 별점이 붙은 카드는 클릭률과 진입 품질을 끌어올립니다.</p>
+    <div class="mockstage">
+      <div class="grid3">
+        <div>
+          <div class="mocklbl before"><span class="dot"></span>BEFORE</div>
+          <div class="pc">
+            <div class="thumb f1">🥗</div>
+            <div class="body">
+              <div class="nm">윤식단 알룰로스 420g</div>
+              <div style="font-size:12px;color:#bbb;margin-top:8px">— 별점 없음 —</div>
+              <div class="price"><span class="dc">21%</span>7,000원</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="mocklbl after"><span class="dot"></span>AFTER</div>
+          <div class="pc">
+            <div class="thumb f1">🥗</div>
+            <div class="body">
+              <div class="nm">윤식단 알룰로스 420g</div>
+              <div class="rrow"><span class="stars sm"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span><span class="sc">4.8</span><span class="ct">(1,204)</span></div>
+              <div class="price"><span class="dc">21%</span>7,000원</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="mocklbl after"><span class="dot"></span>AFTER</div>
+          <div class="pc">
+            <div class="thumb f3">🍱</div>
+            <div class="body">
+              <div class="nm">순수단백 닭가슴살 도시락</div>
+              <div class="rrow"><span class="stars sm"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span><span class="sc">4.9</span><span class="ct">(2,431)</span></div>
+              <div class="price"><span class="dc">15%</span>12,900원</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6-3 MAIN REVIEW WIDGET -->
+    <h3 class="st">③ 상품 상세 리뷰 위젯 (메인 시안) <span class="pill win">핵심</span></h3>
+    <p style="font-size:14px;color:var(--ink2);margin-bottom:16px">평균 별점 대문 · 별점 분포 · 만족 키워드 · 포토 갤러리 · 필터/정렬 · 리치 리뷰 카드를 하나의 위젯으로. 라라스윗 수준의 구성을 윤식단 톤으로 재구성했습니다.</p>
+    <div class="mockstage">
+      <div class="mocklbl after"><span class="dot"></span>AFTER — 리뷰 위젯 전체</div>
+      <div class="rw">
+        <!-- summary -->
+        <div class="summary">
+          <div class="avgbox">
+            <div class="big">4.9</div>
+            <div class="stars lg" style="margin-top:8px"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></div>
+            <div class="cnt">총 <b>2,431</b>개 리뷰<br>재구매율 <b>68%</b></div>
+          </div>
+          <div class="dist">
+            <div class="row"><span class="lab">5★</span><div class="bar"><span style="width:89%"></span></div><span class="pc">2,163</span></div>
+            <div class="row"><span class="lab">4★</span><div class="bar"><span style="width:8%"></span></div><span class="pc">194</span></div>
+            <div class="row"><span class="lab">3★</span><div class="bar"><span style="width:2%"></span></div><span class="pc">49</span></div>
+            <div class="row"><span class="lab">2★</span><div class="bar"><span style="width:1%"></span></div><span class="pc">16</span></div>
+            <div class="row"><span class="lab">1★</span><div class="bar"><span style="width:1%"></span></div><span class="pc">9</span></div>
+          </div>
+        </div>
+        <!-- keywords -->
+        <div class="keywords">
+          <span class="kt">고객이 자주 남긴 말</span>
+          <span class="kw">포만감 좋아요 <b>1,012</b></span>
+          <span class="kw">맛있어요 <b>884</b></span>
+          <span class="kw">배송 빨라요 <b>671</b></span>
+          <span class="kw">혈당 안정 <b>342</b></span>
+          <span class="kw">간편해요 <b>318</b></span>
+        </div>
+        <!-- photo strip -->
+        <div class="photostrip">
+          <div class="h"><span>📷 포토·동영상 후기 <span style="color:var(--ink3);font-weight:600">812</span></span><a href="#">모두 보기 ›</a></div>
+          <div class="pscroll">
+            <div class="pthumb f3">🍱</div>
+            <div class="pthumb f1">🥗</div>
+            <div class="pthumb f5">🍗</div>
+            <div class="pthumb f4">🥦</div>
+            <div class="pthumb f6">🍙</div>
+            <div class="pthumb f2">🥗</div>
+            <div class="pthumb f3">🍱<span class="more">+806</span></div>
+          </div>
+        </div>
+        <!-- filter bar -->
+        <div class="rwbar">
+          <div class="filters">
+            <span class="fchip on">전체</span>
+            <span class="fchip cam">📷 포토·동영상</span>
+            <span class="fchip">⭐ 별점</span>
+            <span class="fchip">🎯 체중감량</span>
+            <span class="fchip">🩸 혈당관리</span>
+            <span class="fchip">💪 근성장</span>
+          </div>
+          <span class="sortsel">베스트순 ▾</span>
+        </div>
+        <!-- review card 1 -->
+        <div class="rcard">
+          <div class="rc-top">
+            <div class="rc-av">김</div>
+            <div>
+              <div class="rc-name">김**<span class="rc-badge re">재구매 4회</span></div>
+              <div class="rc-sub">2026.06.12 · 도움돼요 24</div>
+            </div>
+            <span class="stars" style="margin-left:auto"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span>
+          </div>
+          <span class="rc-opt">구매옵션 · 순수단백 닭가슴살 6팩</span>
+          <div class="rc-purpose"><span class="ptag">#체중감량</span><span class="ptag">#섭취 3주차</span><span class="ptag">#-2.4kg</span></div>
+          <div class="rc-body">점심 대용으로 3주째 먹는데 포만감이 진짜 오래가요. 닭가슴살 특유의 퍽퍽함이 적어서 질리지 않고, 데우면 더 맛있어요. 덕분에 군것질이 확 줄어서 자연스럽게 식단 관리가 됩니다. 다음엔 12팩으로 주문하려고요!</div>
+          <div class="rc-photos"><div class="rc-photo f3">🍱</div><div class="rc-photo f5">🍗</div><div class="rc-photo f1">🥗</div></div>
+          <div class="rc-foot"><span class="helpful">👍 도움돼요 24</span><span style="font-size:12.5px;color:var(--ink3)">신고</span></div>
+          <div class="rc-reply"><div class="who">🥗 윤식단 드림</div>3주째 함께해 주셔서 감사해요! 12팩 정기배송으로 신청하시면 더 알뜰하게 관리하실 수 있어요 :)</div>
+        </div>
+        <!-- review card 2 -->
+        <div class="rcard">
+          <div class="rc-top">
+            <div class="rc-av">이</div>
+            <div>
+              <div class="rc-name">이**<span class="rc-badge">포토</span></div>
+              <div class="rc-sub">2026.06.09 · 도움돼요 11</div>
+            </div>
+            <span class="stars" style="margin-left:auto"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span>
+          </div>
+          <span class="rc-opt">구매옵션 · 윤식단 정기배송 샐러드</span>
+          <div class="rc-purpose"><span class="ptag">#혈당관리</span><span class="ptag">#아침대용</span></div>
+          <div class="rc-body">공복 혈당 때문에 아침을 가볍게 먹어야 하는데 이걸로 바꾸고 나서 식후 혈당 스파이크가 확실히 덜해요. 양도 적당하고 소스가 맛있어서 매일 먹어도 안 물려요.</div>
+          <div class="rc-photos"><div class="rc-photo f4">🥦</div><div class="rc-photo f1">🥗</div></div>
+          <div class="rc-foot"><span class="helpful">👍 도움돼요 11</span><span style="font-size:12.5px;color:var(--ink3)">신고</span></div>
+        </div>
+        <!-- review card 3 -->
+        <div class="rcard">
+          <div class="rc-top">
+            <div class="rc-av">박</div>
+            <div>
+              <div class="rc-name">박**<span class="rc-badge re">재구매 2회</span></div>
+              <div class="rc-sub">2026.06.05 · 도움돼요 7</div>
+            </div>
+            <span class="stars" style="margin-left:auto"><i>★</i><i>★</i><i>★</i><i>★</i><i class="off">★</i></span>
+          </div>
+          <span class="rc-opt">구매옵션 · 밸런시 도시락 8팩</span>
+          <div class="rc-purpose"><span class="ptag">#근성장</span><span class="ptag">#운동식단</span></div>
+          <div class="rc-body">단백질 양 대비 가격이 합리적이라 운동 후 끼니로 잘 챙겨 먹어요. 한 가지 바라는 점은 매운맛 메뉴가 더 있었으면! 그래도 전반적으로 만족해서 또 시켰습니다.</div>
+          <div class="rc-foot"><span class="helpful">👍 도움돼요 7</span><span style="font-size:12.5px;color:var(--ink3)">신고</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6-4 WRITE FORM -->
+    <h3 class="st">④ 리뷰 작성 폼 개선 (다이어트 특화 + 차등 보상) <span class="pill win">신규</span></h3>
+    <p style="font-size:14px;color:var(--ink2);margin-bottom:16px">목적·섭취 기간을 한 번에 선택, 비포애프터 업로드 유도, 차등 적립을 명확히 안내해 수집률과 품질을 동시에 끌어올립니다.</p>
+    <div class="mockstage">
+      <div class="grid2" style="align-items:start">
+        <div>
+          <div class="mocklbl before"><span class="dot"></span>BEFORE — 아임웹 기본</div>
+          <div class="beforebox">
+            <div style="font-weight:700;color:#333;font-size:15px">구매평 작성</div>
+            <div style="font-size:12.5px;color:#888;margin:10px 0">리뷰 적립금 : 일반 200원 | 장문 +200원 | 포토 +200원</div>
+            <div style="border:1px solid #e3e3e0;border-radius:8px;padding:13px;font-size:12.5px;color:#aaa;background:#fafafa;margin-top:8px">별점 ☆☆☆☆☆<br><br>내용을 입력하세요…</div>
+            <div style="font-size:12px;color:#bbb;margin-top:10px">— 목적·기간·비포애프터 항목 없음 —</div>
+          </div>
+        </div>
+        <div>
+          <div class="mocklbl after"><span class="dot"></span>AFTER — 개선 시안</div>
+          <div class="wf">
+            <h4>후기를 남겨주세요</h4>
+            <div class="desc">다른 분들의 식단 선택에 큰 도움이 됩니다 🌱</div>
+            <div class="fld"><label>별점</label><span class="stars lg"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span></div>
+            <div class="fld"><label>어떤 목적으로 드셨나요?</label><div class="opts"><span class="opt on">체중감량</span><span class="opt">혈당관리</span><span class="opt">근성장</span><span class="opt">간편식</span></div></div>
+            <div class="fld"><label>드신 기간</label><div class="opts"><span class="opt">처음</span><span class="opt on">3주차</span><span class="opt">3개월+</span></div></div>
+            <div class="fld"><label>후기 내용</label><div class="ta">예) 포만감이 오래가서 군것질이 줄었어요…</div></div>
+            <div class="fld"><label>사진·동영상 (선택)</label><div class="uprow"><div class="upbox">📷 사진 추가<br><span style="font-size:11px">+200P</span></div><div class="upbox">🎬 동영상 추가<br><span style="font-size:11px">+500P</span></div></div></div>
+            <div class="reward">🎁 이 후기 작성 시 예상 적립 <b>900P</b> (기본 200 + 사진 200 + 동영상 500)</div>
+            <div class="submit">후기 등록하기</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6-5 HOME SECTION -->
+    <h3 class="st">⑤ 홈 "리얼 후기" 섹션 (리뷰의 콘텐츠화) <span class="pill win">신규</span></h3>
+    <p style="font-size:14px;color:var(--ink2);margin-bottom:16px">메인 페이지에 베스트 포토 후기를 큐레이션. 신규 방문자가 첫 화면에서 신뢰를 얻고, 베스트 후기는 그대로 광고 소재(UGC)로 재활용합니다.</p>
+    <div class="mockstage">
+      <div class="mocklbl after"><span class="dot"></span>AFTER — 홈 리뷰 섹션</div>
+      <div class="homerev">
+        <div class="hh">
+          <div class="t">2,400명이 식단을 바꿨습니다</div>
+          <div class="s">윤식단 고객들이 직접 남긴 진짜 후기</div>
+          <div class="agg"><span class="stars sm"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span> 평균 4.9점 · 누적 후기 12,800+</div>
+        </div>
+        <div class="homegrid">
+          <div class="hcard"><div class="ph f3">🍱</div><div class="tx"><span class="stars sm"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span><p>3주 만에 -2.4kg, 포만감이 오래가서 군것질이 줄었어요.</p><div class="nm">김** · #체중감량</div></div></div>
+          <div class="hcard"><div class="ph f4">🥦</div><div class="tx"><span class="stars sm"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span><p>식후 혈당 스파이크가 확실히 덜해요. 아침 대용으로 최고.</p><div class="nm">이** · #혈당관리</div></div></div>
+          <div class="hcard"><div class="ph f5">🍗</div><div class="tx"><span class="stars sm"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span><p>운동 후 단백질 보충용으로 가성비 좋아요. 또 시켰습니다.</p><div class="nm">박** · #근성장</div></div></div>
+          <div class="hcard"><div class="ph f1">🥗</div><div class="tx"><span class="stars sm"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span><p>바쁜 아침에 챙겨먹기 너무 간편하고 맛도 안 물려요.</p><div class="nm">최** · #간편식</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PART 7: ROADMAP -->
+<section class="sec" id="roadmap">
+  <div class="wrap">
+    <div class="eyebrow">Part 7 · 실행 로드맵</div>
+    <h2 class="t"><span class="num">07</span>3단계로 굴리기</h2>
+    <p class="lead">무리 없이 단계적으로. 1단계만 끝내도 "구매평 0개" 화면은 사라집니다.</p>
+    <div class="road">
+      <div class="phase p1"><div class="ph-top"></div><div class="when">STEP 1 · 1~2주</div><h4>모으기 + 띄우기</h4><ul>
+        <li><b>크리마 1개월 무료</b> 신청</li>
+        <li>네이버·쿠팡 <b>리뷰 import</b></li>
+        <li>상단 <b>별점 요약 바</b> 노출</li>
+        <li>리뷰 영역에 <b>평균 별점·분포</b> 추가</li>
+      </ul></div>
+      <div class="phase p2"><div class="ph-top"></div><div class="when">STEP 2 · 3~5주</div><h4>보여주기 + 모으기 자동화</h4><ul>
+        <li>상품 카드 <b>별점 배지</b></li>
+        <li><b>포토 갤러리 + 키워드</b> 위젯</li>
+        <li>구매 후 <b>알림톡 리마인드</b></li>
+        <li><b>차등 적립</b>(포토·동영상) 적용</li>
+      </ul></div>
+      <div class="phase p3"><div class="ph-top"></div><div class="when">STEP 3 · 6주~</div><h4>팔기 + 콘텐츠화</h4><ul>
+        <li><b>다이어트 특화 양식</b>(목적·비포애프터)</li>
+        <li>홈 <b>"리얼 후기" 섹션</b></li>
+        <li>리뷰 전용 페이지/메뉴</li>
+        <li>베스트 후기 <b>광고 소재(UGC)</b> 재활용</li>
+      </ul></div>
+    </div>
+
+    <div class="note" style="margin-top:26px"><b>측정 지표.</b> 리뷰 수집률(목표 5%+), 리뷰 노출 상품 비율(100%), 리뷰 영역 도달률, 리뷰 본 세션의 구매 전환율(미열람 대비), 포토·동영상 리뷰 비중. 크리마 대시보드로 추적 가능합니다.</div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <b>윤식단 자사몰 리뷰 시스템 개선안</b><br>
+      라라스윗 벤치마크 분석 · UX/UI 시안 · 실행 로드맵<br>
+      작성일 2026.06.17 · 시안 내 수치/후기는 예시입니다.
+      <div class="src">
+        참고 출처 ·
+        <a href="https://lalasweet.kr/board/review/4/">라라스윗 리뷰</a> ·
+        <a href="https://www.yundiet.com/shop_view/?idx=1096">윤식단 상품</a> ·
+        <a href="https://imweb.me/faq?mode=view&category=29&category2=40&idx=72184">아임웹×크리마 연동 가이드</a> ·
+        <a href="https://vreview.tv/blog/content/review-marketing-1">브이리뷰: 리뷰와 전환율</a>
+      </div>
+    </div>
+    <div style="text-align:right;font-size:12.5px;color:rgba(255,255,255,.5)">
+      리뷰는 비용이 아니라<br>가장 싸게 만드는 신뢰 자산입니다.
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
